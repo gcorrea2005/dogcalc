@@ -1,13 +1,14 @@
-"""3D viewport using QGraphicsView — same approach as cad2d-lite.
+"""3D viewport using QGraphicsView.
 
-Projects 3D world coords to 2D screen using the camera matrix.
-No OpenGL needed — uses Qt's QGraphicsView (proven on macOS).
+CRITICAL PATTERN (proven on macOS): items must be added to scene
+BEFORE super().__init__(). Deferred drawing (QTimer) does NOT work.
+We pre-draw with estimated viewport size, then redraw on resizeEvent.
 """
 
 import numpy as np
 from math import sin, cos, pi
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene
-from PySide6.QtCore import Qt, QPointF, QTimer
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QBrush, QColor, QPainter, QMouseEvent, QWheelEvent, QKeyEvent
 
 
@@ -24,9 +25,13 @@ class StructView(QGraphicsView):
         self._radius = 20.0
         self._target = np.array([0., 0., 0.])
         self._up = np.array([0., 1., 0.])
+        self._vp_w = 800  # estimated viewport size
+        self._vp_h = 600
 
+        # Pre-draw scene items BEFORE super().__init__ (REQUIRED on macOS)
         self._scene = QGraphicsScene()
-        self._scene.setSceneRect(-2000, -2000, 4000, 4000)
+        self._scene.setSceneRect(-4000, -4000, 8000, 8000)
+        self._draw_scene()
         super().__init__(self._scene, parent)
 
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
@@ -41,16 +46,6 @@ class StructView(QGraphicsView):
         self._status_callback = None
         self._on_mouse_move = None
         self._last_mouse = None
-        self._grid_items = []
-        self._model_items = []
-        QTimer.singleShot(0, self.refresh_view)
-
-    @property
-    def camera_pos(self):
-        x = self._target[0] + self._radius * cos(self._phi) * cos(self._theta)
-        y = self._target[1] + self._radius * sin(self._phi)
-        z = self._target[2] + self._radius * cos(self._phi) * sin(self._theta)
-        return np.array([x, y, z])
 
     def _world_to_screen(self, wx, wy, wz):
         eye = self.camera_pos
@@ -60,36 +55,40 @@ class StructView(QGraphicsView):
         p = np.array([wx, wy, wz]) - eye
         sz = np.dot(p, fwd)
         if sz < 0.01: return None
-        vw = self.viewport().width() or 1
-        vh = self.viewport().height() or 1
+        vw = max(self._vp_w, 1); vh = max(self._vp_h, 1)
         sc = vw / (2.0 * max(self._radius, 0.1) * 0.05)
         return QPointF(vw/2 + np.dot(p, rt)*sc, vh/2 - np.dot(p, cu)*sc)
 
-    def refresh_view(self):
+    @property
+    def camera_pos(self):
+        x = self._target[0] + self._radius * cos(self._phi) * cos(self._theta)
+        y = self._target[1] + self._radius * sin(self._phi)
+        z = self._target[2] + self._radius * cos(self._phi) * sin(self._theta)
+        return np.array([x, y, z])
+
+    def _draw_scene(self):
         self._scene.clear()
-        self._grid_items.clear()
-        self._model_items.clear()
         self._draw_grid()
-        self._draw_model()
+        if self.document:
+            self._draw_model()
 
     def _draw_grid(self):
         pen = QPen(QColor(30, 35, 45), 0.5)
         n, s = 20, 1.0
         for i in range(-n, n+1):
-            for (a1,b1,a2,b2) in [(i*s, -n*s, i*s, n*s), (-n*s, i*s, n*s, i*s)]:
+            for a1,b1,a2,b2 in [(i*s,-n*s,i*s,n*s), (-n*s,i*s,n*s,i*s)]:
                 p1 = self._world_to_screen(a1, 0, b1)
                 p2 = self._world_to_screen(a2, 0, b2)
                 if p1 and p2:
-                    self._grid_items.append(self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), pen))
+                    self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), pen)
 
     def _draw_model(self):
         if not self.document: return
         from src.model.entities.node import SupportType
         wp = QPen(QColor(255,255,255), 2); wb = QBrush(QColor(255,255,255))
-        gp = QPen(QColor(50,255,50), 2.5); gb = QBrush(QColor(50,255,50))
+        gp = QPen(QColor(50,255,50), 3); gb = QBrush(QColor(50,255,50))
         yp = QPen(QColor(255,255,0), 3); yb = QBrush(QColor(255,255,0))
         mp = QPen(QColor(80,180,255), 2)
-        myp = QPen(QColor(255,255,0), 3)
 
         for n in self.document.nodes.values():
             p = self._world_to_screen(n.x, n.y, n.z)
@@ -97,7 +96,7 @@ class StructView(QGraphicsView):
             r = 4; issel = (n.id == self.document.selected_node_id)
             pen = yp if issel else (gp if n.is_supported else wp)
             brush = yb if issel else (gb if n.is_supported else wb)
-            self._model_items.append(self._scene.addEllipse(p.x()-r, p.y()-r, r*2, r*2, pen, brush))
+            self._scene.addEllipse(p.x()-r, p.y()-r, r*2, r*2, pen, brush)
 
         for m in self.document.members.values():
             n1 = self.document.nodes[m.start_node_id]
@@ -106,7 +105,7 @@ class StructView(QGraphicsView):
             p2 = self._world_to_screen(n2.x, n2.y, n2.z)
             if not p1 or not p2: continue
             issel = (m.id == self.document.selected_member_id)
-            self._model_items.append(self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), myp if issel else mp))
+            self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), yp if issel else mp)
 
         if self.show_deformed and self.analysis_result and self.analysis_result.success:
             dp = QPen(QColor(255,50,50), 2.5)
@@ -120,7 +119,12 @@ class StructView(QGraphicsView):
                 p1 = self._world_to_screen(n1.x+r1.dx*s, n1.y+r1.dy*s, n1.z+r1.dz*s)
                 p2 = self._world_to_screen(n2.x+r2.dx*s, n2.y+r2.dy*s, n2.z+r2.dz*s)
                 if p1 and p2:
-                    self._model_items.append(self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), dp))
+                    self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), dp)
+
+    def refresh_view(self):
+        self._vp_w = self.viewport().width() or self._vp_w
+        self._vp_h = self.viewport().height() or self._vp_h
+        self._draw_scene()
 
     def fit_to_model(self):
         doc = self.document
@@ -133,8 +137,15 @@ class StructView(QGraphicsView):
         self._radius = span * 1.8
         self.refresh_view()
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._vp_w = self.viewport().width()
+        self._vp_h = self.viewport().height()
+        if self._vp_w > 0:
+            self.refresh_view()
+
     def _screen_to_world(self, scene_pos):
-        vw = self.viewport().width() or 1; vh = self.viewport().height() or 1
+        vw = max(self._vp_w, 1); vh = max(self._vp_h, 1)
         sc = self._radius * 0.05 * 2 / vw
         wx = self._target[0] + (scene_pos.x() - vw/2) * sc
         wz = self._target[2] - (scene_pos.y() - vh/2) * sc
