@@ -26,7 +26,7 @@ class NodeTool(BaseTool):
         x, y, z = self._snap(scene_pos)
         label = f"N{self.document.node_count + 1}"
         node = self.document.add_node(x, y, z, label=label)
-        self.view.update()
+        self.view.refresh_view()
         if hasattr(self.view, '_status_callback') and self.view._status_callback:
             self.view._status_callback(
                 f"Node {label} created at ({x:.2f}, {y:.2f}, {z:.2f})"

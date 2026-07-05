@@ -34,14 +34,14 @@ class MemberTool(BaseTool):
             # First click: select start node
             self._first_node_id = nid
             self.document.selected_node_id = nid  # highlight in viewport
-            self.view.update()
+            self.view.refresh_view()
             if hasattr(self.view, '_status_callback') and self.view._status_callback:
                 self.view._status_callback(f"Start: {node.label} → click end node")
         elif nid == self._first_node_id:
             # Click same node = deselect
             self._first_node_id = None
             self.document.selected_node_id = None
-            self.view.update()
+            self.view.refresh_view()
         else:
             # Second click: create member
             label = f"M{self.document.member_count + 1}"
@@ -49,7 +49,7 @@ class MemberTool(BaseTool):
             n1_label = self.document.nodes[self._first_node_id].label
             self.document.selected_node_id = None
             self._first_node_id = None
-            self.view.update()
+            self.view.refresh_view()
             if hasattr(self.view, '_status_callback') and self.view._status_callback:
                 self.view._status_callback(
                     f"Member {label}: {n1_label} → {node.label}"

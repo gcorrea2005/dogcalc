@@ -34,7 +34,7 @@ class SelectTool(BaseTool):
             self.document.selected_node_id = nid
             self.document.selected_member_id = None
             self.selected_type = 'node'
-            self.view.update()
+            self.view.refresh_view()
             if hasattr(self.view, '_status_callback') and self.view._status_callback:
                 s = node.support_type.value
                 self.view._status_callback(
@@ -49,7 +49,7 @@ class SelectTool(BaseTool):
             self.document.selected_member_id = mid
             self.document.selected_node_id = None
             self.selected_type = 'member'
-            self.view.update()
+            self.view.refresh_view()
             if hasattr(self.view, '_status_callback') and self.view._status_callback:
                 n1 = self.document.nodes[member.start_node_id].label
                 n2 = self.document.nodes[member.end_node_id].label
@@ -60,7 +60,7 @@ class SelectTool(BaseTool):
 
         # Empty click → deselect
         self._clear_selection()
-        self.view.update()
+        self.view.refresh_view()
 
     def _clear_selection(self):
         self.selected_type = None

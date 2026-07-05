@@ -39,7 +39,7 @@ class DeleteTool(SelectTool):
                 label = entity.label
                 self.document.delete_entity(current_id)
                 self._clear_selection()
-                self.view.update()
+                self.view.refresh_view()
                 if hasattr(self.view, '_status_callback') and self.view._status_callback:
                     self.view._status_callback(f"Deleted: {label}")
 
@@ -57,6 +57,6 @@ class DeleteTool(SelectTool):
                     label = entity.label
                     self.document.delete_entity(eid)
                     self._clear_selection()
-                    self.view.update()
+                    self.view.refresh_view()
                     if hasattr(self.view, '_status_callback') and self.view._status_callback:
                         self.view._status_callback(f"Deleted: {label}")
