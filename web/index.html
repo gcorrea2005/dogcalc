@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DogCalC — Structural Analysis</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:14px 'Courier New',monospace;background:#0a0a1a;color:#fff;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:180px;background:#0000aa;padding:8px 0;overflow-y:auto}
+#sidebar h3{color:#44aaff;font-size:12px;padding:4px 10px;margin-top:8px}
+#sidebar .item{color:#fff;padding:4px 16px;cursor:pointer;font-size:12px}
+#sidebar .item:hover{background:#003388}
+#sidebar .back{color:#ffcc00}
+#viewport{flex:1;position:relative}
+#status{position:absolute;bottom:0;left:0;right:0;background:#000088;padding:4px 12px;font-size:12px;display:flex;gap:16px}
+#cmdline{position:absolute;bottom:24px;left:0;right:0;background:#000018;padding:4px 8px}
+#cmdline input{width:100%;background:transparent;border:none;color:#fff;font:13px 'Courier New',monospace;outline:none}
+#cmdline input::placeholder{color:#555}
+.menu-section{margin-top:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar"></div>
+  <div id="viewport">
+    <div id="cmdline"><input id="cmd" placeholder="Command: _" autofocus></div>
+    <div id="status">Ready | Nodes: 0 | Members: 0</div>
+  </div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+// ── State ──
+let nodes=[], members=[], analysisResult=null;
+let selectedNode=null, selectedMember=null;
+let showDeformed=false, deformedScale=50;
+
+// ── Three.js setup ──
+const vp=document.getElementById('viewport');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(vp.clientWidth,vp.clientHeight-52);
+renderer.setClearColor(0x0f0f19);
+vp.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,vp.clientWidth/Math.max(vp.clientHeight-52,1),0.1,500);
+camera.position.set(14,10,14);
+camera.lookAt(5,3.5,0);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.target.set(5,3.5,0);
+controls.enableDamping=true;
+controls.update();
+
+// Grid
+const grid=new THREE.GridHelper(40,40,0x1e232d,0x1e232d);
+scene.add(grid);
+
+// Axes
+const ax=new THREE.AxesHelper(5);
+scene.add(ax);
+
+// Node/member meshes
+const nodeGeo=new THREE.SphereGeometry(0.15,16,12);
+const nodeMat=new THREE.MeshStandardMaterial({color:0xffffff});
+const suppMat=new THREE.MeshStandardMaterial({color:0x44ff44});
+const selMat=new THREE.MeshStandardMaterial({color:0xffff00,emissive:0x444400});
+const memberMat=new THREE.MeshStandardMaterial({color:0x4fc3f7});
+const memberSelMat=new THREE.MeshStandardMaterial({color:0xffff00,emissive:0x444400});
+const defMat=new THREE.LineBasicMaterial({color:0xff3333,linewidth:2});
+
+let nodeMeshes=[], memberLines=[], defLines=[];
+
+// Lights
+scene.add(new THREE.AmbientLight(0x404060));
+scene.add(new THREE.DirectionalLight(0xffffff,0.6));
+
+// ── API ──
+const API='http://localhost:8765/api';
+
+async function api(method,path,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(API+path,opts);
+  return r.json();
+}
+
+// ── Drawing ──
+function clearModel(){
+  nodeMeshes.forEach(m=>scene.remove(m));
+  memberLines.forEach(l=>scene.remove(l));
+  defLines.forEach(l=>scene.remove(l));
+  nodeMeshes=[]; memberLines=[]; defLines=[];
+}
+
+function drawModel(){
+  clearModel();
+  nodes.forEach((n,i)=>{
+    const isSel=selectedNode===i;
+    const isSupp=n.support_type!=='free';
+    const mat=isSel?selMat:(isSupp?suppMat:nodeMat);
+    const mesh=new THREE.Mesh(nodeGeo,mat);
+    mesh.position.set(n.x,n.y,n.z);
+    mesh.userData={nodeIdx:i};
+    scene.add(mesh);
+    nodeMeshes.push(mesh);
+  });
+  members.forEach((m,i)=>{
+    const n1=nodes[m.start_node_idx], n2=nodes[m.end_node_idx];
+    if(!n1||!n2) return;
+    const dir=new THREE.Vector3().subVectors(
+      new THREE.Vector3(n2.x,n2.y,n2.z),
+      new THREE.Vector3(n1.x,n1.y,n1.z));
+    const mid=new THREE.Vector3(n1.x,n1.y,n1.z).add(dir.clone().multiplyScalar(0.5));
+    const cylGeo=new THREE.CylinderGeometry(0.05,0.05,dir.length(),8);
+    const isSel=selectedMember===i;
+    const mesh=new THREE.Mesh(cylGeo,isSel?memberSelMat:memberMat);
+    mesh.position.copy(mid);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
+    mesh.userData={memberIdx:i};
+    scene.add(mesh);
+    memberLines.push(mesh);
+  });
+  if(showDeformed && analysisResult){
+    members.forEach(m=>{
+      const n1=nodes[m.start_node_idx], n2=nodes[m.end_node_idx];
+      const r1=analysisResult.node_results[n1.id];
+      const r2=analysisResult.node_results[n2.id];
+      if(!r1||!r2) return;
+      const s=deformedScale;
+      const pts=[new THREE.Vector3(n1.x+r1.dx*s,n1.y+r1.dy*s,n1.z+r1.dz*s),
+                 new THREE.Vector3(n2.x+r2.dx*s,n2.y+r2.dy*s,n2.z+r2.dz*s)];
+      const geo=new THREE.BufferGeometry().setFromPoints(pts);
+      const line=new THREE.Line(geo,defMat);
+      scene.add(line);
+      defLines.push(line);
+    });
+  }
+  document.getElementById('status').textContent=
+    `Nodes: ${nodes.length} | Members: ${members.length} | ${showDeformed?'Deformed ON':'Ready'}`;
+}
+
+// ── Raycaster ──
+const raycaster=new THREE.Raycaster();
+renderer.domElement.addEventListener('click',e=>{
+  const rect=renderer.domElement.getBoundingClientRect();
+  const mouse=new THREE.Vector2(
+    ((e.clientX-rect.left)/rect.width)*2-1,
+    -((e.clientY-rect.top)/rect.height)*2+1);
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObjects([...nodeMeshes,...memberLines]);
+  if(hits.length){
+    const obj=hits[0].object;
+    if(obj.userData.nodeIdx!==undefined){
+      selectedNode=obj.userData.nodeIdx;
+      selectedMember=null;
+      const n=nodes[selectedNode];
+      document.getElementById('status').textContent=
+        `Node N${selectedNode+1} (${n.x.toFixed(2)},${n.y.toFixed(2)},${n.z.toFixed(2)}) ${n.support_type}`;
+    }else if(obj.userData.memberIdx!==undefined){
+      selectedMember=obj.userData.memberIdx;
+      selectedNode=null;
+      const m=members[selectedMember];
+      document.getElementById('status').textContent=
+        `Member M${selectedMember+1}: N${m.start_node_idx+1}→N${m.end_node_idx+1}`;
+    }
+    drawModel();
+  }else{
+    selectedNode=null;selectedMember=null;
+    drawModel();
+  }
+});
+
+// ── Sidebar ──
+const sidebar=document.getElementById('sidebar');
+const menu={
+  root:[
+    {h:'DogCalC'},
+    {i:'GEOMETRY','menu_geom'},{i:'LOADS','menu_loads'},
+    {i:'ANALYSIS','menu_analysis'},{i:'RESULTS','menu_results'},
+    {i:'SETTINGS','menu_settings'},{},
+    {i:'SAVE','save'},{i:'OPEN','open'},{i:'STD IN','open_std'},
+    {i:'STD OUT','save_std'},{i:'EXPORT','export'},
+  ],
+  menu_geom:[
+    {h:'GEOMETRY'},{},{i:'NODE','node'},{i:'MEMBER','member'},
+    {i:'SUPPORT','support'},{},{i:'DELETE','delete'},{},{b:'BACK','root'},
+  ],
+  menu_loads:[{h:'LOADS'},{},{i:'NODAL','nodal_load'},{i:'MEMBER','member_load'},{},{b:'BACK','root'}],
+  menu_analysis:[{h:'ANALYSIS'},{},{i:'RUN','analyze'},{},{b:'BACK','root'}],
+  menu_results:[{h:'RESULTS'},{},{i:'DEFORMED','toggle_deformed'},{i:'SCALE+','scale_up'},{i:'SCALE-','scale_down'},{},{b:'BACK','root'}],
+  menu_settings:[{h:'SETTINGS'},{},{i:'GRID','grid_toggle'},{},{b:'BACK','root'}],
+};
+
+function showMenu(name){
+  sidebar.innerHTML='';
+  const items=menu[name]||[];
+  items.forEach(it=>{
+    if(it.h){const d=document.createElement('h3');d.textContent=it.h;sidebar.appendChild(d)}
+    else if(it.i){const d=document.createElement('div');d.className='item';d.textContent=it.i;d.onclick=()=>handleAction(it.i===it.i?menuActions[it.i]||it.i:it.i);sidebar.appendChild(d)}
+    else if(it.b){const d=document.createElement('div');d.className='item back';d.textContent=it.b;d.onclick=()=>showMenu(it.b);sidebar.appendChild(d)}
+    else{const d=document.createElement('div');d.style.height='4px';sidebar.appendChild(d)}
+  });
+}
+showMenu('root');
+
+const menuActions={};
+sidebar.addEventListener('click',e=>{
+  const el=e.target;
+  if(el.classList.contains('item')&&el.dataset.action){
+    const a=el.dataset.action;
+    if(a.startsWith('menu_')) showMenu(a);
+    else handleAction(a);
+  }
+});
+
+// Fix sidebar clicks
+sidebar.addEventListener('click',e=>{
+  if(e.target.classList.contains('item')&&!e.target.classList.contains('back')){
+    const txt=e.target.textContent.trim();
+    const map={GEOMETRY:'menu_geom',LOADS:'menu_loads',ANALYSIS:'menu_analysis',RESULTS:'menu_results',SETTINGS:'menu_settings'};
+    if(map[txt]) showMenu(map[txt]);
+  }
+});
+
+async function handleAction(a){
+  if(a==='analyze') await runAnalysis();
+  else if(a==='toggle_deformed'){showDeformed=!showDeformed;drawModel()}
+  else if(a==='scale_up'){deformedScale*=1.5;drawModel()}
+  else if(a==='scale_down'){deformedScale/=1.5;drawModel()}
+  else if(a==='save') await saveProject();
+  else if(a==='open') await loadProject();
+  else if(a==='open_std') await loadSTD();
+  else if(a==='save_std') await saveSTD();
+  else if(a==='export') await exportResults();
+  else if(a==='node') document.getElementById('cmd').value='NODE ';document.getElementById('cmd').focus();
+  else if(a==='member') document.getElementById('cmd').value='MEMBER ';document.getElementById('cmd').focus();
+  else if(a==='support') document.getElementById('cmd').value='SUPPORT ';document.getElementById('cmd').focus();
+  else if(a==='delete'){if(selectedNode!==null){await api('DELETE','/nodes/'+nodes[selectedNode].id);await refresh();}}
+  else if(a==='grid_toggle'){grid.visible=!grid.visible}
+  else if(a==='root') showMenu('root');
+}
+
+// ── Command line ──
+const cmd=document.getElementById('cmd');
+cmd.addEventListener('keydown',async e=>{
+  if(e.key==='Enter'){
+    const v=cmd.value.trim(); cmd.value='';
+    await parseCommand(v);
+  }
+});
+
+async function parseCommand(text){
+  const parts=text.split(/\s+/);
+  const c=parts[0].toUpperCase();
+  try{
+    if(c==='NODE'){
+      const coords=text.substring(4).split(',');
+      const x=parseFloat(coords[0]),y=parseFloat(coords[1]||0),z=parseFloat(coords[2]||0);
+      await api('POST','/nodes',{x,y,z});
+      await refresh();
+    }else if(c==='MEMBER'){
+      const ids=text.substring(6).split(',');
+      const n1=parseInt(ids[0])-1,n2=parseInt(ids[1])-1;
+      await api('POST','/members',{start_node_id:nodes[n1].id,end_node_id:nodes[n2].id});
+      await refresh();
+    }else if(c==='SUPPORT'){
+      const n=parseInt(parts[1])-1;
+      await api('PATCH','/nodes/'+nodes[n].id,{support_type:parts[2].toLowerCase()});
+      await refresh();
+    }else if(c==='ANALYZE') await runAnalysis();
+    else if(c==='ZOOM'){/* orbit controls handle this */}
+    else document.getElementById('status').textContent='Unknown: '+c;
+  }catch(e){document.getElementById('status').textContent='Error: '+e.message}
+}
+
+// ── Data operations ──
+async function refresh(){
+  nodes=await api('GET','/nodes');
+  members=await api('GET','/members');
+  drawModel();
+}
+
+async function runAnalysis(){
+  try{
+    analysisResult=await api('POST','/analyze');
+    if(analysisResult.success){
+      showDeformed=true;
+      document.getElementById('status').textContent='OK | Max disp: '+(analysisResult.max_disp*1000).toFixed(2)+' mm';
+    }else{
+      document.getElementById('status').textContent='Failed: '+analysisResult.errors[0];
+    }
+    drawModel();
+  }catch(e){document.getElementById('status').textContent='Error: '+e.message}
+}
+
+async function saveProject(){await api('POST','/save');document.getElementById('status').textContent='Saved'}
+async function loadProject(){await api('POST','/load');await refresh();document.getElementById('status').textContent='Loaded'}
+async function loadSTD(){await api('POST','/load_std');await refresh();document.getElementById('status').textContent='STD Loaded'}
+async function saveSTD(){await api('POST','/save_std');document.getElementById('status').textContent='STD Saved'}
+async function exportResults(){await api('POST','/export');document.getElementById('status').textContent='Exported results.xlsx'}
+
+// ── Render loop ──
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+// Auto-load example
+(async()=>{
+  try{
+    nodes=await api('GET','/nodes');
+    members=await api('GET','/members');
+    if(nodes.length===0){
+      await api('POST','/load_std');
+      nodes=await api('GET','/nodes');
+      members=await api('GET','/members');
+    }
+    drawModel();
+  }catch(e){console.log('Server not ready:',e)}
+})();
+
+window.addEventListener('resize',()=>{
+  const h=vp.clientHeight-52;
+  camera.aspect=vp.clientWidth/Math.max(h,1);
+  camera.updateProjectionMatrix();
+  renderer.setSize(vp.clientWidth,h);
+});
+</script>
+</body>
+</html>

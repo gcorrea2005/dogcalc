@@ -53,9 +53,13 @@ class StructView(QGraphicsView):
         self._last_mouse = None
         self._grid_items = []
         self._model_items = []
+        self._initialized = False
 
-        self._draw_grid()
-        self._draw_model()
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self._initialized and self.viewport().width() > 0:
+            self._initialized = True
+            self.refresh_view()
 
     # ── Camera ─────────────────────────────────────
 
@@ -81,11 +85,11 @@ class StructView(QGraphicsView):
         sz = np.dot(p, forward)
 
         if sz < 0.01:
-            return None  # behind camera
+            return None
 
-        vp_w = self.viewport().width()
-        vp_h = self.viewport().height()
-        scale = vp_w / (2.0 * self._radius * 0.05)
+        vp_w = self.viewport().width() or 1
+        vp_h = self.viewport().height() or 1
+        scale = vp_w / (2.0 * max(self._radius, 0.1) * 0.05)
         return QPointF(vp_w / 2 + sx * scale, vp_h / 2 - sy * scale)
 
     # ── Drawing ────────────────────────────────────
