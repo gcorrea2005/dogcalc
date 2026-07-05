@@ -139,3 +139,7 @@ class StructView(QGraphicsView):
     def keyPressEvent(self, event: QKeyEvent):
         if self.tool_manager and self.tool_manager.active_tool:
             self.tool_manager.active_tool.key_press(event); return
+        if event.key() == Qt.Key.Key_Left:   self._angle -= 0.1; self.refresh_view()
+        elif event.key() == Qt.Key.Key_Right: self._angle += 0.1; self.refresh_view()
+        elif event.key() == Qt.Key.Key_Up:    self._offset_y += 30; self.refresh_view()
+        elif event.key() == Qt.Key.Key_Down:  self._offset_y -= 30; self.refresh_view()

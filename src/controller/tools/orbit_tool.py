@@ -36,3 +36,9 @@ class OrbitTool(BaseTool):
 
     def mouse_release(self, event: QMouseEvent, scene_pos):
         self.view.setCursor(Qt.CursorShape.OpenHandCursor)
+
+    def key_press(self, event):
+        if event.key() == Qt.Key.Key_Left:   self.view._angle -= 0.1; self.view.refresh_view()
+        elif event.key() == Qt.Key.Key_Right: self.view._angle += 0.1; self.view.refresh_view()
+        elif event.key() == Qt.Key.Key_Up:    self.view._offset_y += 30; self.view.refresh_view()
+        elif event.key() == Qt.Key.Key_Down:  self.view._offset_y -= 30; self.view.refresh_view()
