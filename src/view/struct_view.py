@@ -53,13 +53,9 @@ class StructView(QGraphicsView):
         self._last_mouse = None
         self._grid_items = []
         self._model_items = []
-        self._initialized = False
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        if not self._initialized and self.viewport().width() > 0:
-            self._initialized = True
-            self.refresh_view()
+        # Defer first draw until event loop runs (viewport has real size)
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(0, self.refresh_view)
 
     # ── Camera ─────────────────────────────────────
 
