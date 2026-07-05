@@ -104,7 +104,7 @@ class StructView(QGraphicsView):
             w = self._screen_to_world(self.mapToScene(event.pos()))
             self.tool_manager.active_tool.mouse_press(event, w)
             self.refresh_view(); return
-        if event.button() == Qt.MouseButton.MiddleButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
     def mouseMoveEvent(self, event: QMouseEvent):
@@ -115,11 +115,12 @@ class StructView(QGraphicsView):
         if self._last_mouse is None: self._last_mouse = event.pos(); return
         dx = event.pos().x() - self._last_mouse.x()
         dy = event.pos().y() - self._last_mouse.y()
-        if event.buttons() & Qt.MouseButton.MiddleButton:
-            if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
-                self._offset_x += dx; self._offset_y += dy
-            else:
-                self._angle += dx * 0.005
+        if event.buttons() & Qt.MouseButton.LeftButton:
+            self._angle += dx * 0.005
+            self.refresh_view()
+        elif event.buttons() & Qt.MouseButton.RightButton:
+            self._offset_x += dx
+            self._offset_y += dy
             self.refresh_view()
         self._last_mouse = event.pos()
 
