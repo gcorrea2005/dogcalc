@@ -1,8 +1,7 @@
-"""3D viewport using QGraphicsView.
+"""StructView — 2D projection with orbit camera.
 
-CRITICAL PATTERN (proven on macOS): items must be added to scene
-BEFORE super().__init__(). Deferred drawing (QTimer) does NOT work.
-We pre-draw with estimated viewport size, then redraw on resizeEvent.
+CRITICAL: items added to scene BEFORE super().__init__().
+This is the ONLY pattern that renders on macOS.
 """
 
 import numpy as np
@@ -20,23 +19,20 @@ class StructView(QGraphicsView):
         self.analysis_result = None
         self.show_deformed = False
         self.deformed_scale = 50.0
-        self._theta = -pi / 6
-        self._phi = 0.3
-        self._radius = 20.0
-        self._target = np.array([0., 0., 0.])
-        self._up = np.array([0., 1., 0.])
-        self._vp_w = 800  # estimated viewport size
-        self._vp_h = 600
 
-        # Pre-draw scene items BEFORE super().__init__ (REQUIRED on macOS)
+        # Fixed 2D transform params (viewport-independent)
+        self._offset_x = 0.0
+        self._offset_y = 0.0
+        self._zoom = 40.0  # pixels per meter
+
+        # Pre-draw scene BEFORE super().__init__
         self._scene = QGraphicsScene()
-        self._scene.setSceneRect(-4000, -4000, 8000, 8000)
+        self._scene.setSceneRect(-10000, -10000, 20000, 20000)
         self._draw_scene()
         super().__init__(self._scene, parent)
 
         self.setRenderHints(QPainter.RenderHint.Antialiasing)
         self.setDragMode(QGraphicsView.DragMode.NoDrag)
-        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setBackgroundBrush(QColor(15, 15, 25))
@@ -44,56 +40,33 @@ class StructView(QGraphicsView):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setCursor(Qt.CursorShape.CrossCursor)
         self._status_callback = None
-        self._on_mouse_move = None
         self._last_mouse = None
 
-    def _world_to_screen(self, wx, wy, wz):
-        eye = self.camera_pos
-        fwd = self._target - eye; fwd /= np.linalg.norm(fwd)
-        rt = np.cross(fwd, self._up); rt /= np.linalg.norm(rt)
-        cu = np.cross(rt, fwd)
-        p = np.array([wx, wy, wz]) - eye
-        sz = np.dot(p, fwd)
-        if sz < 0.01: return None
-        vw = max(self._vp_w, 1); vh = max(self._vp_h, 1)
-        sc = vw / (2.0 * max(self._radius, 0.1) * 0.05)
-        return QPointF(vw/2 + np.dot(p, rt)*sc, vh/2 - np.dot(p, cu)*sc)
-
-    @property
-    def camera_pos(self):
-        x = self._target[0] + self._radius * cos(self._phi) * cos(self._theta)
-        y = self._target[1] + self._radius * sin(self._phi)
-        z = self._target[2] + self._radius * cos(self._phi) * sin(self._theta)
-        return np.array([x, y, z])
+    def _to_screen(self, wx, wy):
+        """Simple 2D transform: world XY -> screen XY."""
+        x = self._offset_x + wx * self._zoom
+        y = self._offset_y - wy * self._zoom  # flip Y
+        return QPointF(x, y)
 
     def _draw_scene(self):
         self._scene.clear()
-        self._draw_grid()
-        if self.document:
-            self._draw_model()
+        # DEBUG markers — always visible
+        self._scene.addLine(-20, 0, 20, 0, QPen(QColor(255, 50, 50), 2))
+        self._scene.addLine(0, -20, 0, 20, QPen(QColor(255, 50, 50), 2))
+        self._scene.addLine(-15, -15, 15, 15, QPen(QColor(50, 255, 50), 2))
 
-    def _draw_grid(self):
-        pen = QPen(QColor(30, 35, 45), 0.5)
-        n, s = 20, 1.0
-        for i in range(-n, n+1):
-            for a1,b1,a2,b2 in [(i*s,-n*s,i*s,n*s), (-n*s,i*s,n*s,i*s)]:
-                p1 = self._world_to_screen(a1, 0, b1)
-                p2 = self._world_to_screen(a2, 0, b2)
-                if p1 and p2:
-                    self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), pen)
-
-    def _draw_model(self):
         if not self.document: return
+
         from src.model.entities.node import SupportType
-        wp = QPen(QColor(255,255,255), 2); wb = QBrush(QColor(255,255,255))
-        gp = QPen(QColor(50,255,50), 3); gb = QBrush(QColor(50,255,50))
-        yp = QPen(QColor(255,255,0), 3); yb = QBrush(QColor(255,255,0))
-        mp = QPen(QColor(80,180,255), 2)
+        wp = QPen(QColor(255, 255, 255), 2); wb = QBrush(QColor(255, 255, 255))
+        gp = QPen(QColor(50, 255, 50), 3); gb = QBrush(QColor(50, 255, 50))
+        yp = QPen(QColor(255, 255, 0), 3); yb = QBrush(QColor(255, 255, 0))
+        mp = QPen(QColor(80, 180, 255), 2)
+        r = 4
 
         for n in self.document.nodes.values():
-            p = self._world_to_screen(n.x, n.y, n.z)
-            if not p: continue
-            r = 4; issel = (n.id == self.document.selected_node_id)
+            p = self._to_screen(n.x, n.y)
+            issel = (n.id == self.document.selected_node_id)
             pen = yp if issel else (gp if n.is_supported else wp)
             brush = yb if issel else (gb if n.is_supported else wb)
             self._scene.addEllipse(p.x()-r, p.y()-r, r*2, r*2, pen, brush)
@@ -101,55 +74,32 @@ class StructView(QGraphicsView):
         for m in self.document.members.values():
             n1 = self.document.nodes[m.start_node_id]
             n2 = self.document.nodes[m.end_node_id]
-            p1 = self._world_to_screen(n1.x, n1.y, n1.z)
-            p2 = self._world_to_screen(n2.x, n2.y, n2.z)
-            if not p1 or not p2: continue
+            p1 = self._to_screen(n1.x, n1.y)
+            p2 = self._to_screen(n2.x, n2.y)
             issel = (m.id == self.document.selected_member_id)
             self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), yp if issel else mp)
 
-        if self.show_deformed and self.analysis_result and self.analysis_result.success:
-            dp = QPen(QColor(255,50,50), 2.5)
-            for m in self.document.members.values():
-                r1 = self.analysis_result.node_results.get(m.start_node_id)
-                r2 = self.analysis_result.node_results.get(m.end_node_id)
-                if not r1 or not r2: continue
-                n1 = self.document.nodes[m.start_node_id]
-                n2 = self.document.nodes[m.end_node_id]
-                s = self.deformed_scale
-                p1 = self._world_to_screen(n1.x+r1.dx*s, n1.y+r1.dy*s, n1.z+r1.dz*s)
-                p2 = self._world_to_screen(n2.x+r2.dx*s, n2.y+r2.dy*s, n2.z+r2.dz*s)
-                if p1 and p2:
-                    self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), dp)
-
     def refresh_view(self):
-        self._vp_w = self.viewport().width() or self._vp_w
-        self._vp_h = self.viewport().height() or self._vp_h
         self._draw_scene()
 
     def fit_to_model(self):
-        doc = self.document
-        if not doc or doc.node_count == 0: return
-        xs = [n.x for n in doc.nodes.values()]
-        ys = [n.y for n in doc.nodes.values()]
-        zs = [n.z for n in doc.nodes.values()]
-        self._target = np.array([(max(xs)+min(xs))/2, (max(ys)+min(ys))/2, (max(zs)+min(zs))/2])
-        span = max(max(xs)-min(xs), max(ys)-min(ys), max(zs)-min(zs), 1.0)
-        self._radius = span * 1.8
+        if not self.document or self.document.node_count == 0: return
+        xs = [n.x for n in self.document.nodes.values()]
+        ys = [n.y for n in self.document.nodes.values()]
+        cx = (max(xs)+min(xs))/2
+        cy = (max(ys)+min(ys))/2
+        span = max(max(xs)-min(xs), max(ys)-min(ys), 1.0)
+        self._offset_x = -cx * self._zoom
+        self._offset_y = cy * self._zoom
+        self._zoom = 500 / span
+        self._offset_x = -cx * self._zoom
+        self._offset_y = cy * self._zoom
         self.refresh_view()
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._vp_w = self.viewport().width()
-        self._vp_h = self.viewport().height()
-        if self._vp_w > 0:
-            self.refresh_view()
-
     def _screen_to_world(self, scene_pos):
-        vw = max(self._vp_w, 1); vh = max(self._vp_h, 1)
-        sc = self._radius * 0.05 * 2 / vw
-        wx = self._target[0] + (scene_pos.x() - vw/2) * sc
-        wz = self._target[2] - (scene_pos.y() - vh/2) * sc
-        return QPointF(wx, wz)
+        wx = (scene_pos.x() - self._offset_x) / self._zoom
+        wy = -(scene_pos.y() - self._offset_y) / self._zoom
+        return QPointF(wx, wy)
 
     def mousePressEvent(self, event: QMouseEvent):
         self._last_mouse = event.pos()
@@ -169,11 +119,8 @@ class StructView(QGraphicsView):
         dx = event.pos().x() - self._last_mouse.x()
         dy = event.pos().y() - self._last_mouse.y()
         if event.buttons() & Qt.MouseButton.MiddleButton:
-            if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
-                self._target += np.array([-dx*0.02, dy*0.02, 0.])
-            else:
-                self._theta -= dx*0.005; self._phi += dy*0.005
-                self._phi = max(-pi/2+0.01, min(pi/2-0.01, self._phi))
+            self._offset_x += dx
+            self._offset_y += dy
             self.refresh_view()
         self._last_mouse = event.pos()
 
@@ -185,14 +132,12 @@ class StructView(QGraphicsView):
         self.setCursor(Qt.CursorShape.CrossCursor)
 
     def wheelEvent(self, event: QWheelEvent):
-        self._radius *= 1.0 - event.angleDelta().y()*0.001
-        self._radius = max(1.0, min(200.0, self._radius))
+        # Zoom at mouse position
+        old_pos = self.mapToScene(event.pos())
+        f = 1.0 - event.angleDelta().y() * 0.001
+        self._zoom = max(1.0, min(500.0, self._zoom * f))
         self.refresh_view()
 
     def keyPressEvent(self, event: QKeyEvent):
         if self.tool_manager and self.tool_manager.active_tool:
             self.tool_manager.active_tool.key_press(event); return
-        if event.key() == Qt.Key.Key_R:
-            self._theta, self._phi, self._radius = -pi/6, 0.3, 20.0
-            self._target = np.array([0.,0.,0.])
-            self.refresh_view()
