@@ -9,15 +9,18 @@ venv/
 .vscode/
 .idea/
 *.swp
-*.swo
 
 # OS
 .DS_Store
-Thumbs.db
 
 # Project
 *.dogcalc
 dogcalc.db
+*.std
+*.xlsx
+project.dogcalc
+model.std
+results.xlsx
 
 # Build
 dist/

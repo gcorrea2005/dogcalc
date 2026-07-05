@@ -43,12 +43,21 @@ class StructView(QGraphicsView):
         sy = self._offset_y - (wy + wz * sin(self._angle)) * self._zoom
         return QPointF(sx, sy)
 
+    def _draw_grid(self):
+        pen = QPen(QColor(30, 35, 45), 0.5)
+        n, s = 15, 1.0
+        for i in range(-n, n+1):
+            p1 = self._to_screen(i*s, 0, -n*s)
+            p2 = self._to_screen(i*s, 0, n*s)
+            if p1 and p2: self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), pen)
+            p1 = self._to_screen(-n*s, 0, i*s)
+            p2 = self._to_screen(n*s, 0, i*s)
+            if p1 and p2: self._scene.addLine(p1.x(), p1.y(), p2.x(), p2.y(), pen)
+
     def _draw_scene(self):
         self._scene.clear()
-        # Debug cross
-        self._scene.addLine(-20, 0, 20, 0, QPen(QColor(255, 50, 50), 2))
-        self._scene.addLine(0, -20, 0, 20, QPen(QColor(255, 50, 50), 2))
         if not self.document: return
+        self._draw_grid()
         self._draw_model()
 
     def _draw_model(self):
