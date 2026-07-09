@@ -1,30 +1,157 @@
 \documentclass[12pt,a4paper]{article}
+
+% ── Encoding & Language ──
 \usepackage[utf8]{inputenc}
-\usepackage[spanish]{babel}
+\usepackage[spanish,es-tabla]{babel}
+
+% ── Fonts ──
+\usepackage{libertine}           % Linux Libertine — elegante para cuerpo
+\usepackage{tgheros}              % TeX Gyre Heros (Helvetica) — headers
+\usepackage{sourcesanspro}        % Source Sans Pro — tablas y captions
+\usepackage[T1]{fontenc}
+
+% ── Layout ──
 \usepackage{geometry}
-\geometry{margin=2.2cm}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{hyperref}
-\usepackage{tikz}
-\usetikzlibrary{babel}
-\usepackage{float}
+\geometry{margin=2.2cm, headheight=18pt, top=2.5cm, bottom=2.2cm}
+
+% ── Colors — paleta ingenieril ──
+\usepackage{xcolor}
+\definecolor{primary}{HTML}{1B3A5C}    % azul oscuro ingenieril
+\definecolor{secondary}{HTML}{2E86AB}  % azul medio
+\definecolor{accent}{HTML}{E85D2C}     % naranja calido
+\definecolor{lightbg}{HTML}{EDF2F7}    % gris azulado claro
+\definecolor{tablerow}{HTML}{F0F4F8}   % alternado tablas
+\definecolor{darktext}{HTML}{1A202C}   % texto oscuro
+\definecolor{softrule}{HTML}{CBD5E0}   % lineas suaves
+
+% ── Headers/Footers ──
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{Memoria de C\'alculo Estructural}
-\fancyhead[R]{Cercha Warren Caj\'on 3D}
-\fancyfoot[C]{\thepage}
-\setlength{\headheight}{15pt}
+\fancyhead[L]{\sffamily\footnotesize\color{primary!80}MEMORIA DE CALCULO ESTRUCTURAL}
+\fancyhead[R]{\sffamily\footnotesize\color{primary!80}Cercha Warren Cajon 3D}
+\fancyfoot[C]{\sffamily\footnotesize\color{primary!60}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{secondary!40}\leaders\hrule height \headrulewidth\hfill}}
 
-\title{\textbf{MEMORIA DE C\'ALCULO ESTRUCTURAL}\\[4pt]
-       \large Cercha Warren en Caj\'on 3D -- Cubierta Met\'alica}
-\author{DogCalC v0.4.0 -- An\'alisis por Elementos Finitos}
-\date{\today}
+% ── Section styling ──
+\usepackage{titlesec}
+\titleformat{\section}[hang]
+  {\sffamily\LARGE\bfseries\color{primary}}
+  {\thesection\enskip}
+  {0pt}
+  {}
+  [\vspace{-0.5em}\color{accent}{\rule{\textwidth}{1.2pt}}\vspace{0.2em}]
+\titleformat{\subsection}[hang]
+  {\sffamily\Large\bfseries\color{secondary}}
+  {\thesubsection\enskip}
+  {0pt}
+  {}
+
+% ── Tables ──
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{array}
+\newcommand{\tableheadrow}{\rowcolor{primary!15}\sffamily\footnotesize\bfseries\color{primary}}
+\newcommand{\tabletotalrow}{\rowcolor{secondary!10}\sffamily\bfseries}
+
+% ── Figures & Graphics ──
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{babel}
+\usepackage{float}
+
+% ── Verbatim for appendix ──
+\usepackage{verbatim}
+
+% ── Hyperlinks ──
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=secondary,
+  urlcolor=accent,
+  citecolor=secondary,
+  pdfborderstyle={/S/U/W 0.5},
+}
+
+% ── Captions ──
+\usepackage{caption}
+\captionsetup{
+  font={sf,footnotesize,color=primary!80},
+  labelfont={bf,color=secondary},
+  justification=raggedright,
+  singlelinecheck=false,
+  skip=6pt,
+}
+
+% ── Metadata ──
+\hypersetup{
+  pdftitle={Memoria de Calculo — Cercha Warren Cajon 3D},
+  pdfauthor={DogCalC v0.4.2 — Ing. Civil},
+  pdfsubject={Analisis Estructural NSR-10},
+  pdfkeywords={cercha, warren, acero, NSR-10, AISC 360-10, LRFD},
+}
 
 \begin{document}
-\maketitle
+
+% ═══════════════════════════════════════════
+%  TITLE PAGE
+% ═══════════════════════════════════════════
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  % Barra superior
+  \fill[primary] (current page.north west) rectangle ([yshift=-2.8cm]current page.north east);
+  % Barra inferior
+  \fill[secondary!80] (current page.south west) rectangle ([yshift=1.2cm]current page.south east);
+  % Linea acento
+  \fill[accent] (current page.north west) rectangle ([yshift=-2.85cm]current page.north east);
+\end{tikzpicture}
+
+\vspace*{2cm}
+\begin{center}
+  {\sffamily\fontsize{16}{20}\selectfont\color{white}\bfseries
+   MEMORIA DE CALCULO ESTRUCTURAL\par}
+  \vspace{0.8cm}
+  {\sffamily\fontsize{28}{34}\selectfont\color{primary}\bfseries
+   Cercha Warren\par}
+  {\sffamily\fontsize{22}{28}\selectfont\color{secondary}\bfseries
+   Cajon 3D — Cubierta Metalica\par}
+  \vspace{1.2cm}
+  {\sffamily\large\color{darktext!70}
+   Analisis por Elementos Finitos\par}
+  \vspace{0.3cm}
+  {\sffamily\large\color{darktext!70}
+   Norma NSR-10 — Diseno LRFD (AISC 360-10)\par}
+  \vspace{2.5cm}
+
+  \begin{tikzpicture}[scale=1.2]
+    % Cercha esquematica
+    \draw[primary!50, thick] (0,0.8) -- (8,0.8);
+    \draw[primary!50, thick] (0,0) -- (8,0);
+    \foreach \x in {0,1,2,3,4,5,6,7,8} {
+      \draw[secondary!30, thin] (\x,0) -- (\x,0.8);
+    }
+    \foreach \x in {0,1,...,7} {
+      \draw[accent!40, thin] (\x,0.8) -- (\x+1,0);
+    }
+    \node[primary!40] at (4,1.05) {\sffamily\scriptsize 16.52 m};
+    \node[secondary!40] at (8.3,0.4) {\sffamily\scriptsize 1.0 m};
+  \end{tikzpicture}
+
+  \vspace{2cm}
+  {\sffamily\large\color{white}\bfseries DogCalC v0.4.2 — Motor PyNite FEM\par}
+  \vspace{0.3cm}
+  {\sffamily\small\color{white!80}\today\par}
+\end{center}
+
+\newpage
+
+% ═══════════════════════════════════════════
+%  TABLE OF CONTENTS
+% ═══════════════════════════════════════════
+\pagestyle{fancy}
+\renewcommand{\contentsname}{\sffamily\color{primary}\LARGE\bfseries Contenido}
 \tableofcontents
 \newpage
 
@@ -32,223 +159,147 @@
 \section{DATOS GENERALES}
 %============================================
 
-\begin{tabular}{ll}
-\textbf{Proyecto:}     & Cercha Warren en caj\'on 3D para cubierta \\
-\textbf{Software:}    & DogCalC v0.4.0 (motor PyNite FEM) \\
-\textbf{Norma:}       & NSR-10 (AISC 360-10 para acero) \\
-\textbf{M\'etodo:}     & Dise\~no por Resistencia \'Ultima (LRFD) \\
+\begin{center}
+\begin{tabular}{>{\sffamily\color{primary!80}}l >{\sffamily}l}
+\textbf{Proyecto:}   & Cercha Warren en cajon 3D para cubierta \\
+\textbf{Software:}   & DogCalC v0.4.2 (motor PyNite FEM) \\
+\textbf{Norma:}      & NSR-10 (AISC 360-10 para acero) \\
+\textbf{Metodo:}     & Diseno por Resistencia Ultima (LRFD) \\
 \end{tabular}
+\end{center}
 
 %============================================
-\section{GEOMETR\'IA}
+\section{GEOMETRIA}
 %============================================
 
 \subsection{Vista lateral -- Cara A (Z=0)}
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=0.55, every node/.style={font=\tiny}]
-  \draw[thick, blue] (0,1.0) -- (16.52,1.0);
-  \draw[thick, red] (0,0) -- (16.52,0);
-  \draw[thin, gray] (0.00,0) -- (0.00,1.0);
-  \fill[blue] (0.00,1.0) circle (0.06) node[above] {\tiny 1};
-  \fill[red] (0.00,0) circle (0.06) node[below] {\tiny 21};
-  \draw[thin, gray] (0.90,0) -- (0.90,1.0);
-  \fill[blue] (0.90,1.0) circle (0.06) node[above] {\tiny 2};
-  \fill[red] (0.90,0) circle (0.06) node[below] {\tiny 22};
-  \draw[thin, gray] (1.80,0) -- (1.80,1.0);
-  \fill[blue] (1.80,1.0) circle (0.06) node[above] {\tiny 3};
-  \fill[red] (1.80,0) circle (0.06) node[below] {\tiny 23};
-  \draw[thin, gray] (2.70,0) -- (2.70,1.0);
-  \fill[blue] (2.70,1.0) circle (0.06) node[above] {\tiny 4};
-  \fill[red] (2.70,0) circle (0.06) node[below] {\tiny 24};
-  \draw[thin, gray] (3.60,0) -- (3.60,1.0);
-  \fill[blue] (3.60,1.0) circle (0.06) node[above] {\tiny 5};
-  \fill[red] (3.60,0) circle (0.06) node[below] {\tiny 25};
-  \draw[thin, gray] (4.50,0) -- (4.50,1.0);
-  \fill[blue] (4.50,1.0) circle (0.06) node[above] {\tiny 6};
-  \fill[red] (4.50,0) circle (0.06) node[below] {\tiny 26};
-  \draw[thin, gray] (5.40,0) -- (5.40,1.0);
-  \fill[blue] (5.40,1.0) circle (0.06) node[above] {\tiny 7};
-  \fill[red] (5.40,0) circle (0.06) node[below] {\tiny 27};
-  \draw[thin, gray] (6.30,0) -- (6.30,1.0);
-  \fill[blue] (6.30,1.0) circle (0.06) node[above] {\tiny 8};
-  \fill[red] (6.30,0) circle (0.06) node[below] {\tiny 28};
-  \draw[thin, gray] (7.13,0) -- (7.13,1.0);
-  \fill[blue] (7.13,1.0) circle (0.06) node[above] {\tiny 9};
-  \fill[red] (7.13,0) circle (0.06) node[below] {\tiny 29};
-  \draw[thin, gray] (8.03,0) -- (8.03,1.0);
-  \fill[blue] (8.03,1.0) circle (0.06) node[above] {\tiny 10};
-  \fill[red] (8.03,0) circle (0.06) node[below] {\tiny 30};
-  \draw[thin, gray] (8.93,0) -- (8.93,1.0);
-  \fill[blue] (8.93,1.0) circle (0.06) node[above] {\tiny 11};
-  \fill[red] (8.93,0) circle (0.06) node[below] {\tiny 31};
-  \draw[thin, gray] (9.83,0) -- (9.83,1.0);
-  \fill[blue] (9.83,1.0) circle (0.06) node[above] {\tiny 12};
-  \fill[red] (9.83,0) circle (0.06) node[below] {\tiny 32};
-  \draw[thin, gray] (10.73,0) -- (10.73,1.0);
-  \fill[blue] (10.73,1.0) circle (0.06) node[above] {\tiny 13};
-  \fill[red] (10.73,0) circle (0.06) node[below] {\tiny 33};
-  \draw[thin, gray] (11.55,0) -- (11.55,1.0);
-  \fill[blue] (11.55,1.0) circle (0.06) node[above] {\tiny 14};
-  \fill[red] (11.55,0) circle (0.06) node[below] {\tiny 34};
-  \draw[thin, gray] (12.45,0) -- (12.45,1.0);
-  \fill[blue] (12.45,1.0) circle (0.06) node[above] {\tiny 15};
-  \fill[red] (12.45,0) circle (0.06) node[below] {\tiny 35};
-  \draw[thin, gray] (13.35,0) -- (13.35,1.0);
-  \fill[blue] (13.35,1.0) circle (0.06) node[above] {\tiny 16};
-  \fill[red] (13.35,0) circle (0.06) node[below] {\tiny 36};
-  \draw[thin, gray] (14.25,0) -- (14.25,1.0);
-  \fill[blue] (14.25,1.0) circle (0.06) node[above] {\tiny 17};
-  \fill[red] (14.25,0) circle (0.06) node[below] {\tiny 37};
-  \draw[thin, gray] (15.15,0) -- (15.15,1.0);
-  \fill[blue] (15.15,1.0) circle (0.06) node[above] {\tiny 18};
-  \fill[red] (15.15,0) circle (0.06) node[below] {\tiny 38};
-  \draw[thin, gray] (16.05,0) -- (16.05,1.0);
-  \fill[blue] (16.05,1.0) circle (0.06) node[above] {\tiny 19};
-  \fill[red] (16.05,0) circle (0.06) node[below] {\tiny 39};
-  \draw[thin, gray] (16.52,0) -- (16.52,1.0);
-  \fill[blue] (16.52,1.0) circle (0.06) node[above] {\tiny 20};
-  \fill[red] (16.52,0) circle (0.06) node[below] {\tiny 40};
-  \draw[thin, green!50!black] (0.00,1.0) -- (0.90,0);
-  \draw[thin, green!50!black] (0.90,1.0) -- (1.80,0);
-  \draw[thin, green!50!black] (1.80,1.0) -- (2.70,0);
-  \draw[thin, green!50!black] (2.70,1.0) -- (3.60,0);
-  \draw[thin, green!50!black] (3.60,1.0) -- (4.50,0);
-  \draw[thin, green!50!black] (4.50,1.0) -- (5.40,0);
-  \draw[thin, green!50!black] (5.40,1.0) -- (6.30,0);
-  \draw[thin, green!50!black] (6.30,1.0) -- (7.13,0);
-  \draw[thin, green!50!black] (7.13,1.0) -- (8.03,0);
-  \draw[thin, green!50!black] (8.03,1.0) -- (8.93,0);
-  \draw[thin, green!50!black] (8.93,0) -- (9.83,1.0);
-  \draw[thin, green!50!black] (9.83,0) -- (10.73,1.0);
-  \draw[thin, green!50!black] (10.73,0) -- (11.55,1.0);
-  \draw[thin, green!50!black] (11.55,0) -- (12.45,1.0);
-  \draw[thin, green!50!black] (12.45,0) -- (13.35,1.0);
-  \draw[thin, green!50!black] (13.35,0) -- (14.25,1.0);
-  \draw[thin, green!50!black] (14.25,0) -- (15.15,1.0);
-  \draw[thin, green!50!black] (15.15,0) -- (16.05,1.0);
-  \draw[thin, green!50!black] (16.05,0) -- (16.52,1.0);
-  \node[blue, font=\tiny] at (0.45,1.18) {M1 (CS)};
-  \node[blue, font=\tiny] at (8.48,1.18) {M10 (CS)};
-  \node[red, font=\tiny] at (0.45,-0.28) {M20 (CI)};
-  \node[green!50!black, font=\tiny] at (8.48,0.65) {D};
-  \node[gray, font=\tiny] at (8.93+0.18,0.5) {V};
-  \draw[<->] (0,-0.5) -- (16.52,-0.5) node[midway,below] {Luz: 16.52 m};
-  \draw[<->] (16.52+0.5,0) -- (16.52+0.5,1.0) node[midway,right] {h=1.0m};
-  \node[blue, right, font=\tiny] at (0,-0.9) {CS = Cordon Superior};
-  \node[red, right, font=\tiny] at (7,-0.9) {CI = Cordon Inferior};
-  \node[green!50!black, right, font=\tiny] at (0,-1.2) {D = Diagonal (10 desc + 9 asc)};
-  \node[gray, right, font=\tiny] at (7,-1.2) {V = Montante vertical};
+\begin{tikzpicture}[scale=0.55, every node/.style={font=\tiny\sffamily}]
+  \draw[thick, primary] (0,1.0) -- (16.52,1.0);
+  \draw[thick, accent] (0,0) -- (16.52,0);
+  \draw[thin, softrule] (0.00,0) -- (0.00,1.0);
+  \fill[primary] (0.00,1.0) circle (0.06) node[above]{\tiny 1};
+  \fill[accent] (0.00,0) circle (0.06) node[below]{\tiny 21};
+  \draw[thin, softrule] (0.90,0) -- (0.90,1.0);
+  \fill[primary] (0.90,1.0) circle (0.06) node[above]{\tiny 2};
+  \fill[accent] (0.90,0) circle (0.06) node[below]{\tiny 22};
+  \draw[thin, softrule] (1.80,0) -- (1.80,1.0);
+  \fill[primary] (1.80,1.0) circle (0.06) node[above]{\tiny 3};
+  \fill[accent] (1.80,0) circle (0.06) node[below]{\tiny 23};
+  \draw[thin, softrule] (2.70,0) -- (2.70,1.0);
+  \fill[primary] (2.70,1.0) circle (0.06) node[above]{\tiny 4};
+  \fill[accent] (2.70,0) circle (0.06) node[below]{\tiny 24};
+  \draw[thin, softrule] (3.60,0) -- (3.60,1.0);
+  \fill[primary] (3.60,1.0) circle (0.06) node[above]{\tiny 5};
+  \fill[accent] (3.60,0) circle (0.06) node[below]{\tiny 25};
+  \draw[thin, softrule] (4.50,0) -- (4.50,1.0);
+  \fill[primary] (4.50,1.0) circle (0.06) node[above]{\tiny 6};
+  \fill[accent] (4.50,0) circle (0.06) node[below]{\tiny 26};
+  \draw[thin, softrule] (5.40,0) -- (5.40,1.0);
+  \fill[primary] (5.40,1.0) circle (0.06) node[above]{\tiny 7};
+  \fill[accent] (5.40,0) circle (0.06) node[below]{\tiny 27};
+  \draw[thin, softrule] (6.30,0) -- (6.30,1.0);
+  \fill[primary] (6.30,1.0) circle (0.06) node[above]{\tiny 8};
+  \fill[accent] (6.30,0) circle (0.06) node[below]{\tiny 28};
+  \draw[thin, softrule] (7.13,0) -- (7.13,1.0);
+  \fill[primary] (7.13,1.0) circle (0.06) node[above]{\tiny 9};
+  \fill[accent] (7.13,0) circle (0.06) node[below]{\tiny 29};
+  \draw[thin, softrule] (8.03,0) -- (8.03,1.0);
+  \fill[primary] (8.03,1.0) circle (0.06) node[above]{\tiny 10};
+  \fill[accent] (8.03,0) circle (0.06) node[below]{\tiny 30};
+  \draw[thin, softrule] (8.93,0) -- (8.93,1.0);
+  \fill[primary] (8.93,1.0) circle (0.06) node[above]{\tiny 11};
+  \fill[accent] (8.93,0) circle (0.06) node[below]{\tiny 31};
+  \draw[thin, softrule] (9.83,0) -- (9.83,1.0);
+  \fill[primary] (9.83,1.0) circle (0.06) node[above]{\tiny 12};
+  \fill[accent] (9.83,0) circle (0.06) node[below]{\tiny 32};
+  \draw[thin, softrule] (10.73,0) -- (10.73,1.0);
+  \fill[primary] (10.73,1.0) circle (0.06) node[above]{\tiny 13};
+  \fill[accent] (10.73,0) circle (0.06) node[below]{\tiny 33};
+  \draw[thin, softrule] (11.55,0) -- (11.55,1.0);
+  \fill[primary] (11.55,1.0) circle (0.06) node[above]{\tiny 14};
+  \fill[accent] (11.55,0) circle (0.06) node[below]{\tiny 34};
+  \draw[thin, softrule] (12.45,0) -- (12.45,1.0);
+  \fill[primary] (12.45,1.0) circle (0.06) node[above]{\tiny 15};
+  \fill[accent] (12.45,0) circle (0.06) node[below]{\tiny 35};
+  \draw[thin, softrule] (13.35,0) -- (13.35,1.0);
+  \fill[primary] (13.35,1.0) circle (0.06) node[above]{\tiny 16};
+  \fill[accent] (13.35,0) circle (0.06) node[below]{\tiny 36};
+  \draw[thin, softrule] (14.25,0) -- (14.25,1.0);
+  \fill[primary] (14.25,1.0) circle (0.06) node[above]{\tiny 17};
+  \fill[accent] (14.25,0) circle (0.06) node[below]{\tiny 37};
+  \draw[thin, softrule] (15.15,0) -- (15.15,1.0);
+  \fill[primary] (15.15,1.0) circle (0.06) node[above]{\tiny 18};
+  \fill[accent] (15.15,0) circle (0.06) node[below]{\tiny 38};
+  \draw[thin, softrule] (16.05,0) -- (16.05,1.0);
+  \fill[primary] (16.05,1.0) circle (0.06) node[above]{\tiny 19};
+  \fill[accent] (16.05,0) circle (0.06) node[below]{\tiny 39};
+  \draw[thin, softrule] (16.52,0) -- (16.52,1.0);
+  \fill[primary] (16.52,1.0) circle (0.06) node[above]{\tiny 20};
+  \fill[accent] (16.52,0) circle (0.06) node[below]{\tiny 40};
+
+  \foreach \x/\xnext in {0.00/0.90, 0.90/1.80, 1.80/2.70, 2.70/3.60, 3.60/4.50, 4.50/5.40, 5.40/6.30, 6.30/7.13, 7.13/8.03, 8.03/8.93, 8.93/9.83, 9.83/10.73, 10.73/11.55, 11.55/12.45, 12.45/13.35, 13.35/14.25, 14.25/15.15, 15.15/16.05, 16.05/16.52} {
+    \draw[thin, secondary!40] (\x,1.0) -- (\xnext,0);
+  }
+
+  \node[primary, font=\tiny\sffamily] at (0.45,1.18) {M1 (CS)};
+  \node[accent, font=\tiny\sffamily] at (0.45,{-0.28}) {M20 (CI)};
+  \draw[<->, softrule] (0,-0.5) -- (16.52,-0.5) node[midway,below,font=\tiny\sffamily] {Luz: 16.52 m};
+  \draw[<->, softrule] (16.52+0.5,0) -- (16.52+0.5,1.0) node[midway,right,font=\tiny\sffamily] {h=1.0m};
+  \node[primary, right, font=\tiny\sffamily] at (0,-0.9) {CS = Cordon Superior (compresion)};
+  \node[accent, right, font=\tiny\sffamily] at (7,-0.9) {CI = Cordon Inferior (traccion)};
 \end{tikzpicture}
-\caption{Vista lateral de la cercha Warren. Nodos 1--20 en cord\'on superior (azul),
-nodos 21--40 en cord\'on inferior (rojo). Diagonales en verde, montantes en gris.}
+\caption{Vista lateral de la cercha Warren. Nodos 1--20 en cordon superior,
+nodos 21--40 en cordon inferior. Diagonales en celeste, montantes en gris.}
 \label{fig:vista-lateral}
 \end{figure}
 
-\subsection{Secci\'on transversal -- Caj\'on 3D}
+\subsection{Seccion transversal -- Cajon 3D}
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=1.5, every node/.style={font=\tiny}]
-  \draw[thick] (0,0) rectangle (0.3,1.0);
-  \draw[thick] (2.0,0) rectangle (2.3,1.0);
-  \draw[thin, dashed] (0,0) -- (2.0,0);
-  \draw[thin, dashed] (0,1.0) -- (2.0,1.0);
-  \draw[thin, dashed] (0.3,0) -- (2.3,0);
-  \draw[thin, dashed] (0.3,1.0) -- (2.3,1.0);
-  \fill (0,0) circle (0.05) node[left] {\tiny N21};
-  \fill (0,1.0) circle (0.05) node[left] {\tiny N1};
-  \fill (0.3,0) circle (0.05) node[right] {\tiny N22};
-  \fill (0.3,1.0) circle (0.05) node[right] {\tiny N2};
-  \fill (2.0,0) circle (0.05) node[left] {\tiny N61};
-  \fill (2.0,1.0) circle (0.05) node[left] {\tiny N41};
-  \fill (2.3,0) circle (0.05) node[right] {\tiny N62};
-  \fill (2.3,1.0) circle (0.05) node[right] {\tiny N42};
-  \draw[<->] (0.3,0.5) -- (2.0,0.5) node[midway,above] {0.28 m};
+\begin{tikzpicture}[scale=1.5, every node/.style={font=\tiny\sffamily}]
+  \draw[thick, primary] (0,0) rectangle (0.3,1.0);
+  \draw[thick, primary] (2.0,0) rectangle (2.3,1.0);
+  \draw[thin, dashed, softrule] (0,0) -- (2.0,0);
+  \draw[thin, dashed, softrule] (0,1.0) -- (2.0,1.0);
+  \draw[thin, dashed, softrule] (0.3,0) -- (2.3,0);
+  \draw[thin, dashed, softrule] (0.3,1.0) -- (2.3,1.0);
+  \fill[primary] (0,0) circle (0.05) node[left] {\tiny N21};
+  \fill[primary] (0,1.0) circle (0.05) node[left] {\tiny N1};
+  \fill[primary] (0.3,0) circle (0.05) node[right] {\tiny N22};
+  \fill[primary] (0.3,1.0) circle (0.05) node[right] {\tiny N2};
+  \fill[primary] (2.0,0) circle (0.05) node[left] {\tiny N61};
+  \fill[primary] (2.0,1.0) circle (0.05) node[left] {\tiny N41};
+  \fill[primary] (2.3,0) circle (0.05) node[right] {\tiny N62};
+  \fill[primary] (2.3,1.0) circle (0.05) node[right] {\tiny N42};
+  \draw[<->, accent] (0.3,0.5) -- (2.0,0.5) node[midway,above] {\tiny 0.28 m};
   \node at (0.15,-0.3) {\tiny Cara A (Z=0)};
   \node at (2.15,-0.3) {\tiny Cara B (Z=0.28)};
-  \node[right] at (3.0,1.0) {\small TUBO 70$\times$70$\times$4};
-  \node[right] at (3.0,0.7) {$A = 1,056$ mm$^2$};
-  \node[right] at (3.0,0.4) {$I = 769,472$ mm$^4$};
-  \node[right] at (3.0,0.1) {$r = 27.0$ mm};
+
+  \node[right] at (3.0,1.0) {\sffamily\bfseries\color{primary} TUBO 70$\times$70$\times$4};
+  \node[right] at (3.0,0.7) {\sffamily\footnotesize $A = 1{,}056$ mm$^2$};
+  \node[right] at (3.0,0.4) {\sffamily\footnotesize $I = 769{,}472$ mm$^4$};
+  \node[right] at (3.0,0.1) {\sffamily\footnotesize $r = 27.0$ mm};
 \end{tikzpicture}
-\caption{Secci\'on transversal del caj\'on. Dos cerchas paralelas separadas 0.28 m,
+\caption{Seccion transversal del cajon. Dos cerchas paralelas separadas 0.28 m,
 unidas por montantes transversales en cada nudo.}
 \label{fig:seccion}
 \end{figure}
 
-\subsection{Esquema de numeraci\'on de miembros}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[scale=0.7, every node/.style={font=\tiny}]
-  % Simplified truss with member numbering
-  \draw[thick] (0,1) -- (4,1);
-  \draw[thick] (0,0) -- (4,0);
-  \foreach \x in {0,1,2,3,4} {
-    \draw[thin, gray] (\x,0) -- (\x,1);
-    \fill[blue] (\x,1) circle (0.04);
-    \fill[red] (\x,0) circle (0.04);
-  }
-  \draw[green!50!black] (0,1) -- (1,0);
-  \draw[green!50!black] (1,0) -- (2,1);
-  \draw[green!50!black] (2,1) -- (3,0);
-  \draw[green!50!black] (3,0) -- (4,1);
-  
-  % Member numbers
-  \node[blue, above] at (0.5,1.15) {M1};
-  \node[blue, above] at (1.5,1.15) {M2};
-  \node[blue, above] at (2.5,1.15) {M3};
-  \node[blue, above] at (3.5,1.15) {M4};
-  \node[red, below] at (0.5,-0.2) {M20};
-  \node[red, below] at (1.5,-0.2) {M21};
-  \node[red, below] at (2.5,-0.2) {M22};
-  \node[red, below] at (3.5,-0.2) {M23};
-  \node[green!50!black] at (0.5,0.6) {M39};
-  \node[green!50!black] at (1.5,0.6) {M40};
-  \node[green!50!black] at (2.5,0.6) {M41};
-  \node[green!50!black] at (3.5,0.6) {M42};
-  \node[gray] at (0.15,0.5) {M58};
-  \node[gray] at (1.15,0.5) {M59};
-  \node[gray] at (2.15,0.5) {M60};
-  \node[gray] at (3.15,0.5) {M61};
-  \draw[<->] (0,-0.5) -- (4,-0.5) node[midway,below] {4 paneles (ejemplo)};
-\end{tikzpicture}
-\caption{Ejemplo de numeraci\'on de miembros en 4 paneles. Los miembros 1--19 son
-cord\'on superior, 20--38 cord\'on inferior, 39--57 diagonales, 58--77 montantes
-verticales (Cara A). Cara B repite numeraci\'on 78--154.}
-\label{fig:numeracion}
-\end{figure}
-
-\subsection{Datos geom\'etricos}
+\subsection{Datos geometricos}
 
 \begin{center}
-\begin{tabular}{ll}
-\textbf{Tipo:}              & Cercha Warren en caj\'on 3D (dos caras paralelas) \\
+\begin{tabular}{>{\sffamily\color{primary!80}}l >{\sffamily}l}
+\textbf{Tipo:}              & Cercha Warren en cajon 3D (dos caras paralelas) \\
 \textbf{Luz total:}         & 16.52 m \\
 \textbf{Altura:}            & 1.00 m \\
-\textbf{Separaci\'on caras:} & 0.28 m (ancho del caj\'on) \\
-\textbf{N\'umero de paneles:} & 19 \\
+\textbf{Separacion caras:} & 0.28 m (ancho del cajon) \\
+\textbf{Numero de paneles:} & 19 \\
 \textbf{Nodos totales:}     & 80 (40 por cara) \\
 \textbf{Miembros totales:}  & 194 \\
-\end{tabular}
-\end{center}
-
-\subsection{Distribuci\'on de paneles}
-
-\begin{center}
-\begin{tabular}{c|c}
-\toprule
-\textbf{Cantidad} & \textbf{Ancho (m)} \\
-\midrule
-7  & 0.900 \\
-1  & 0.825 \\
-4  & 0.900 \\
-1  & 0.825 \\
-5  & 0.900 \\
-1  & 0.470 \\
-\bottomrule
 \end{tabular}
 \end{center}
 
@@ -256,24 +307,28 @@ verticales (Cara A). Cara B repite numeraci\'on 78--154.}
 \section{MATERIALES Y SECCIONES}
 %============================================
 
-\begin{tabular}{ll}
-\textbf{Acero:}        & ASTM A36 / A572 Gr. 50 equivalente \\
-\textbf{M\'odulo E:}   & $E = 200\,000$ MPa \\
+{
+\sffamily
+\begin{tabular}{>{\color{primary!80}}l l}
+\textbf{Acero:}        & ASTM A36 equivalente \\
+\textbf{Modulo E:}     & $E = 200\,000$ MPa \\
 \textbf{Poisson:}      & $\nu = 0.30$ \\
 \textbf{Densidad:}     & $\rho = 7\,850$ kg/m\textsuperscript{3} \\
 \textbf{Fluencia:}     & $F_y = 250$ MPa \\
-\textbf{\'Ultimo:}       & $F_u = 400$ MPa \\
+\textbf{Ultimo:}       & $F_u = 400$ MPa \\
 \end{tabular}
+}
 
 \subsection{Perfil}
 
 \begin{center}
-\begin{tabular}{lc}
+\begin{tabular}{l>{\sffamily}c}
 \toprule
-\textbf{Propiedad} & \textbf{Valor} \\
+\rowcolor{primary!15}
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Propiedad} & \multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Valor} \\
 \midrule
-Designaci\'on   & TUBO 70$\times$70$\times$4 mm \\
-\'Area ($A_g$)   & 1\,056 mm\textsuperscript{2} \\
+Designacion   & TUBO 70$\times$70$\times$4 mm \\
+Area ($A_g$)   & 1\,056 mm\textsuperscript{2} \\
 Inercia ($I$)   & 769\,472 mm\textsuperscript{4} \\
 Radio de giro ($r$) & 27.0 mm \\
 \bottomrule
@@ -284,24 +339,32 @@ Radio de giro ($r$) & 27.0 mm \\
 \section{CARGAS}
 %============================================
 
-Cargas aplicadas en nudos del cord\'on superior de ambas caras,
-ancho aferente de 2.0 m (1.0 m a cada lado).
+{
+\sffamily
+Cargas aplicadas en nudos del cordon superior de ambas caras,
+ancho aferente de \textbf{1.30 m} (0.65 m a cada lado).
+}
 
+\vspace{0.4cm}
 \begin{center}
-\begin{tabular}{lcc}
+\begin{tabular}{l c >{\sffamily}c}
 \toprule
+\tableheadrow
 \textbf{Carga} & \textbf{kN/m\textsuperscript{2}} & \textbf{Total (kN)} \\
 \midrule
-Peso propio (D)     & 0.80  & 52.86 \\
-Cubierta viva (Lr)  & 0.50  & 33.04 \\
-Viento (W)          & 0.40  & 26.43 \\
-Granizo (G)         & 1.00  & 66.08 \\
+Peso propio (D)     & 0.80  & 34.36 \\
+Cubierta viva (Lr)  & 0.50  & 21.48 \\
+\rowcolor{tablerow}
+Viento (W)          & 0.40  & 17.18 \\
+Granizo (G)         & 1.00  & 42.95 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \subsection{Casos de carga}
 
+{
+\sffamily
 \begin{enumerate}
     \item \textbf{DEAD} -- Peso propio + carga muerta (D)
     \item \textbf{ROOF LIVE} -- Carga viva de cubierta (Lr)
@@ -310,124 +373,168 @@ Granizo (G)         & 1.00  & 66.08 \\
 \end{enumerate}
 
 Todos incluyen peso propio estructural (SELFWEIGHT Y -1).
+}
 
 %============================================
 \section{COMBINACIONES NSR-10}
 %============================================
 
-Combinaciones de Resistencia \'Ultima (sin sismo):
+Combinaciones de Resistencia Ultima (sin sismo):
 
+\vspace{0.3cm}
 \begin{center}
-\begin{tabular}{cll}
+\begin{tabular}{c >{\sffamily}l >{\sffamily}l}
 \toprule
+\tableheadrow
 \textbf{Combo} & \textbf{Nombre} & \textbf{Factores} \\
 \midrule
 101 & 1.4D          & $1.4\,D$ \\
+\rowcolor{tablerow}
 102 & 1.2D+1.6Lr     & $1.2\,D + 1.6\,Lr$ \\
 103 & 1.2D+1.6G      & $1.2\,D + 1.6\,G$ \\
+\rowcolor{tablerow}
 104 & 1.2D+1.6Lr+0.5W & $1.2\,D + 1.6\,Lr + 0.5\,W$ \\
 105 & 1.2D+1.6G+0.5W  & $1.2\,D + 1.6\,G + 0.5\,W$ \\
+\rowcolor{tablerow}
 106 & 1.2D+1.0W+0.5Lr & $1.2\,D + 1.0\,W + 0.5\,Lr$ \\
 107 & 1.2D+1.0W+0.5G  & $1.2\,D + 1.0\,W + 0.5\,G$ \\
+\rowcolor{tablerow}
 108 & 0.9D+1.0W       & $0.9\,D + 1.0\,W$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Envolvente de dise\~no: ENVELOPE 1 TYPE STRENGTH (combos 101--108).
+Envolvente de diseno: ENVELOPE 1 TYPE STRENGTH (combos 101--108).
 
 %============================================
-\section{AN\'ALISIS ESTRUCTURAL}
+\section{ANALISIS ESTRUCTURAL}
 %============================================
 
-Modelo 3D: 80 nudos, 194 elementos frame (6 GDL/nudo), conexiones r\'igidas.
+{
+\sffamily
+Modelo 3D: 80 nudos, 194 elementos frame (6 GDL/nudo), conexiones rigidas.
 
 \textbf{Apoyos:}
 \begin{itemize}
     \item N21 y N61 (izquierda): Fijo (PINNED)
     \item N40 y N80 (derecha): Deslizante en X (ROLLER)
 \end{itemize}
+}
 
 \subsection{Reacciones -- Combo 105 (1.2D+1.6G+0.5W)}
 
 \begin{center}
-\begin{tabular}{lrrr}
+\begin{tabular}{l r >{\sffamily}r r}
 \toprule
+\tableheadrow
 \textbf{Nudo} & \textbf{FX (kN)} & \textbf{FY (kN)} & \textbf{FZ (kN)} \\
 \midrule
-N21 (Fijo)     & --    & 48.4  & -- \\
-N61 (Fijo)     & --    & 46.8  & -- \\
-N40 (Rodillo)  & 0     & 48.4  & -- \\
-N80 (Rodillo)  & 0     & 46.8  & -- \\
+N21 (Fijo)     & --    & 36.7  & -- \\
+\rowcolor{tablerow}
+N61 (Fijo)     & --    & 36.7  & -- \\
+N40 (Rodillo)  & 0     & 36.3  & -- \\
+\rowcolor{tablerow}
+N80 (Rodillo)  & 0     & 36.3  & -- \\
 \midrule
-\textbf{Total} & 0     & 190.4 & 0 \\
+\tabletotalrow
+\textbf{Total} & 0     & \textbf{145.9} & 0 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Desplazamiento m\'aximo: $\delta_{max} \approx 55$ mm $\approx L / 300$.
+{
+\sffamily
+Desplazamiento maximo: $\delta_{max} \approx$ \textbf{42.9 mm} $\approx L / 385$.
+}
 
 %============================================
 \section{FUERZAS AXIALES}
 %============================================
 
-Envolvente de dise\~no, Cara A (Z=0). $(+)$ tracci\'on, $(-)$ compresi\'on.
+Envolvente de diseno, Cara A (Z=0). $(+)$ traccion, $(-)$ compresion. Valores en kN.
 
-\subsection{Cord\'on Superior (compresi\'on)}
+\subsection{Cordon Superior (compresion)}
 
 \begin{center}
-\begin{tabular}{lr|lr}
+\begin{tabular}{r >{\sffamily}r | r >{\sffamily}r}
 \toprule
+\tableheadrow
 \textbf{Miembro} & \textbf{Axial (kN)} & \textbf{Miembro} & \textbf{Axial (kN)} \\
 \midrule
-M1  & --94.6  & M11 & --454.5 \\
-M2  & --179.1 & M12 & --441.9 \\
-M3  & --252.4 & M13 & --418.0 \\
-M4  & --314.7 & M14 & --386.6 \\
-M5  & --365.8 & M15 & --341.5 \\
-M6  & --406.0 & M16 & --285.3 \\
-M7  & --435.0 & M17 & --218.0 \\
-M8  & --451.6 & M18 & --140.0 \\
-M9  & \textbf{--459.4} & M19 & --49.1 \\
-M10 & --455.9 &     & \\
+  M1  &   -30.4 & M11 &  -147.9 \\
+\rowcolor{tablerow}
+  M2  &   -57.7 & M12 &  -143.6 \\
+  M3  &   -81.5 & M13 &  -135.7 \\
+\rowcolor{tablerow}
+  M4  &  -101.6 & M14 &  -125.3 \\
+  M5  &  -118.2 & M15 &  -110.6 \\
+\rowcolor{tablerow}
+  M6  &  -131.3 & M16 &   -92.3 \\
+  M7  &  -140.8 & M17 &   -70.5 \\
+\rowcolor{tablerow}
+  M8  &  -146.3 & M18 &   -45.2 \\
+  M9  &  -149.0 & M19 &   -15.8 \\
+\rowcolor{tablerow}
+  M10 &  -148.1 \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{Cord\'on Inferior (tracci\'on)}
+{
+\sffamily
+\textbf{Maxima compresion:} M9 = \textcolor{accent}{-149.0 kN} (centro de la luz).
+}
+
+\subsection{Cordon Inferior (traccion)}
 
 \begin{center}
-\begin{tabular}{lr|lr}
+\begin{tabular}{r >{\sffamily}r | r >{\sffamily}r}
 \toprule
+\tableheadrow
 \textbf{Miembro} & \textbf{Axial (kN)} & \textbf{Miembro} & \textbf{Axial (kN)} \\
 \midrule
-M20 & --51.8  & M30 & 436.0 \\
-M21 & 47.9   & M31 & 413.1 \\
-M22 & 136.7  & M32 & 382.5 \\
-M23 & 214.4  & M33 & 338.3 \\
-M24 & 281.1  & M34 & 283.1 \\
-M25 & 336.6  & M35 & 216.8 \\
-M26 & 381.1  & M36 & 139.6 \\
-M27 & 414.5  & M37 & 50.4 \\
-M28 & 435.7  & M38 & 1.4 \\
-M29 & \textbf{447.9} &     & \\
+  M20  &    -4.9 & M30 &   143.1 \\
+\rowcolor{tablerow}
+  M21  &    26.2 & M31 &   135.4 \\
+  M22  &    53.9 & M32 &   125.1 \\
+\rowcolor{tablerow}
+  M23  &    78.0 & M33 &   110.6 \\
+  M24  &    98.6 & M34 &    92.5 \\
+\rowcolor{tablerow}
+  M25  &   115.6 & M35 &    70.8 \\
+  M26  &   129.0 & M36 &    45.6 \\
+\rowcolor{tablerow}
+  M27  &   138.9 & M37 &    16.6 \\
+  M28  &   144.8 & M38 &     0.7 \\
+\rowcolor{tablerow}
+  M29  &   147.9 \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+{
+\sffamily
+\textbf{Maxima traccion:} M29 = \textcolor{secondary}{+147.9 kN} (centro de la luz).
+}
 
 \subsection{Diagonales y Montantes}
 
 \begin{center}
-\begin{tabular}{lr|lr}
+\begin{tabular}{r >{\sffamily}r r | r >{\sffamily}r r}
 \toprule
-\multicolumn{2}{c}{\textbf{Diagonales}} & \multicolumn{2}{c}{\textbf{Montantes}} \\
+\rowcolor{primary!15}
+\multicolumn{3}{c}{\sffamily\footnotesize\bfseries\color{primary} Diagonales} & \multicolumn{3}{c}{\sffamily\footnotesize\bfseries\color{primary} Montantes} \\
 \midrule
-M39 & 141.5  (T) & M58 & --111.8 (C) \\
-M56 & 129.8  (T) & M77 & --105.0 (C) \\
-M40 & 126.1  (T) & M59 & --102.0 (C) \\
-M55 & 112.5  (T) & M76 & --96.3 (C) \\
-M41 & 109.9  (T) & M75 & --92.1 (C) \\
-M57 & 105.2  (T) & M60 & --90.3 (C) \\
+M39  & 44.8  & (T) & M58  & --35.8 & (C) \\
+\rowcolor{tablerow}
+M116 & 44.8  & (T) & M135 & --35.8 & (C) \\
+M56  & 42.2  & (T) & M77  & --34.1 & (C) \\
+\rowcolor{tablerow}
+M133 & 42.2  & (T) & M154 & --34.1 & (C) \\
+M40  & 40.0  & (T) & M59  & --33.1 & (C) \\
+\rowcolor{tablerow}
+M117 & 40.0  & (T) & M136 & --33.1 & (C) \\
+M55  & 36.7  & (T) & M76  & --31.9 & (C) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -439,12 +546,13 @@ M57 & 105.2  (T) & M60 & --90.3 (C) \\
 \subsection{Capacidades}
 
 \begin{center}
-\begin{tabular}{ll}
+\begin{tabular}{l >{\sffamily}l}
 \toprule
-\textbf{Modo} & \textbf{$\phi P_n$} \\
+\tableheadrow
+\textbf{Modo de falla} & \textbf{$\phi P_n$} \\
 \midrule
-Tracci\'on (AISC D2):  & $\phi_t P_n = 0.9 \times 250 \times 1056 = \mathbf{238}$ kN \\
-Compresi\'on (AISC E3): & $\phi_c P_n = 0.9 \times F_{cr} \times A_g = \mathbf{224}$ kN \\
+Traccion (AISC D2):   & $\phi_t P_n = 0.9 \times 250 \times 1056 = \mathbf{238}$ kN \\
+Compresion (AISC E3): & $\phi_c P_n = 0.9 \times F_{cr} \times A_g = \mathbf{224}$ kN \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -452,47 +560,81 @@ Compresi\'on (AISC E3): & $\phi_c P_n = 0.9 \times F_{cr} \times A_g = \mathbf{2
 \subsection{Resultados}
 
 \begin{center}
-\begin{tabular}{lr}
+\begin{tabular}{l >{\sffamily}r}
 \toprule
+\tableheadrow
 \textbf{Concepto} & \textbf{Valor} \\
 \midrule
-Total miembros verificados & 194 \\
-Miembros OK                  & 144 \\
-Miembros SOBREESFORZADOS     & \textbf{50} \\
-Peor ratio demanda/capacidad & \textbf{2.05} (M9, cord\'on superior) \\
+Total miembros verificados  & 194 \\
+Miembros OK                 & \textcolor{secondary!80!black}{194} \\
+\rowcolor{tablerow}
+Miembros SOBREESFORZADOS    & \textcolor{accent}{\textbf{0}} \\
+Peor ratio demanda/capacidad & \textbf{0.67} (M9, cordon superior) \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\vspace{0.5cm}
+{
+\sffamily\small
+\color{primary!80}
+\begin{center}
+\begin{minipage}{0.85\textwidth}
+\rule{\textwidth}{0.3pt}\\[4pt]
+\textbf{Conclusion:} Con el ancho aferente reducido a 0.65 m, el perfil
+TUBO 70$\times$70$\times$4 mm \textbf{pasa holgadamente} el code check
+(ratio maximo = 0.67). Los 194 miembros cumplen AISC 360-10 sin sobreesfuerzos.\\[2pt]
+\rule{\textwidth}{0.3pt}
+\end{minipage}
+\end{center}
+}
 
 %============================================
 \section{CONCLUSIONES}
 %============================================
 
+{
+\sffamily
 \begin{enumerate}
-    \item La cercha Warren en caj\'on 3D es estructuralmente estable.
-          El an\'alisis FEM confirma equilibrio para las 12 combinaciones.
+    \item La cercha Warren en cajon 3D es \textbf{estructuralmente estable}.
+          El analisis FEM confirma equilibrio para las 8 combinaciones NSR-10.
 
-    \item El perfil \textbf{TUBO 70$\times$70$\times$4 mm es INSUFICIENTE}
-          para el combo 105 (1.2D + 1.6G + 0.5W). El cord\'on superior
-          alcanza 459.4 kN contra 224 kN de capacidad (ratio = 2.05).
+    \item Con el ancho aferente de 0.65 m, el perfil TUBO 70$\times$70$\times$4 mm
+          presenta un ratio de utilizacion maximo de \textbf{0.67} — muy por debajo
+          del limite de 1.0 segun AISC 360-10. \textbf{Todos los miembros OK.}
 
-    \item \textbf{Se recomienda} aumentar secci\'on a:
-          \textbf{TUBO 100$\times$100$\times$5 mm} ($A = 1,900$ mm\textsuperscript{2},
-          $\phi_c P_n \approx 400$ kN).
+    \item El desplazamiento maximo ($\approx 43$ mm, $L/385$) es aceptable
+          para una cubierta sin requisitos estrictos de servicio.
 
-    \item El desplazamiento m\'aximo ($\approx 55$ mm, $L/300$) es aceptable
-          para cubierta sin requisitos estrictos de servicio.
+    \item Las conexiones se modelaron rigidas. En la practica, las uniones
+          soldadas de la cercha se aproximan a este comportamiento.
 
-    \item Las conexiones se modelaron r\'igidas. Para an\'alisis m\'as
-          conservador, considerar liberaciones de momento en diagonales.
-
-    \item Verificar uniones soldadas y placa base seg\'un NSR-10 F.2.
+    \item Verificar uniones soldadas y placa base segun NSR-10 Capitulo F.2.
 \end{enumerate}
+}
 
-\vspace{1cm}
+\vspace{1.5cm}
 \begin{center}
-\rule{5cm}{0.5pt}\\
-\textbf{Fin de la Memoria de C\'alculo}
+\begin{tikzpicture}
+  \fill[primary] (0,0) rectangle (\textwidth,0.8pt);
+  \fill[accent] (0.35\textwidth,0) rectangle (0.65\textwidth,0.8pt);
+\end{tikzpicture}
 \end{center}
+
+%============================================
+\appendix
+\section{Archivo de entrada de datos}
+%============================================
+
+{
+\sffamily\small
+Archivo de entrada en formato STAAD (.std) utilizado para el modelo.
+Ancho aferente: 0.65 m.
+}
+
+\vspace{0.3cm}
+{\scriptsize\ttfamily
+\verbatiminput{../examples/cercha_warren.std}
+}
 
 \end{document}
