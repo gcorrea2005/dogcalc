@@ -25,6 +25,8 @@ window._load_case_table._doc = doc
 window._load_case_table.refresh()
 window._combo_table._doc = doc
 window._combo_table.refresh()
+window._material_table._doc = doc
+window._material_table.refresh()
 window._view.refresh_view()
 window._view.fit_to_model()
 window._update_status(f"Warren: {doc.node_count}N {doc.member_count}M")

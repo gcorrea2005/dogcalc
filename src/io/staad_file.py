@@ -358,7 +358,7 @@ def _parse_materials(lines, i, ctx) -> int:
                 current_mat["poisson"] = float(parts[1])
             elif upper.startswith("DENSITY"):
                 v = float(parts[1])
-                current_mat["density"] = v * 1000 if v < 1000 else v  # kN/m³ → kg/m³
+                current_mat["density"] = v * 100 if v < 1000 else v  # kN/m³ → kg/m³ (~/9.81×1000)
 
         i += 1
 

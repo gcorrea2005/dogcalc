@@ -28,6 +28,7 @@ from src.view.ui.member_table import MemberTable
 from src.view.ui.support_table import SupportTable
 from src.view.ui.load_case_table import LoadCaseTable
 from src.view.ui.combo_table import ComboTable
+from src.view.ui.material_table import MaterialTable
 from src.view.ui.results_viewer import ResultsViewer
 from src.view.ui.std_editor import StdEditor
 from src.model.document import Document
@@ -104,6 +105,12 @@ class MainWindow(QMainWindow):
         self._combo_table.setMinimumWidth(420)
         self._combo_table.hide()
 
+        self._material_table = MaterialTable(self._document)
+        self._material_table.materials_changed.connect(self._on_table_changed)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._material_table)
+        self._material_table.setMinimumWidth(470)
+        self._material_table.hide()
+
         self._results_viewer = ResultsViewer()
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._results_viewer)
         self._results_viewer.hide()
@@ -156,6 +163,13 @@ class MainWindow(QMainWindow):
             self._combo_table.refresh()
             self._combo_table.show()
 
+    def toggle_material_table(self):
+        if self._material_table.isVisible():
+            self._material_table.hide()
+        else:
+            self._material_table.refresh()
+            self._material_table.show()
+
     def toggle_results_viewer(self):
         if self._results_viewer.isVisible():
             self._results_viewer.hide()
@@ -182,6 +196,8 @@ class MainWindow(QMainWindow):
         self._load_case_table.refresh()
         self._combo_table._doc = new_doc
         self._combo_table.refresh()
+        self._material_table._doc = new_doc
+        self._material_table.refresh()
         self._view.refresh_view()
         self._view.fit_to_model()
         self._update_status(f"STD: {new_doc.node_count}N {new_doc.member_count}M")
@@ -325,6 +341,8 @@ class MainWindow(QMainWindow):
             self.toggle_load_case_table()
         elif action == "combo_table":
             self.toggle_combo_table()
+        elif action == "material_table":
+            self.toggle_material_table()
         elif action == "results_viewer":
             self.toggle_results_viewer()
         elif action == "std_editor":

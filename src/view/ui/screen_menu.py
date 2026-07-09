@@ -104,6 +104,7 @@ class ScreenMenu(QListWidget):
             "menu_settings": [
                 (" SETTINGS ", None, True), ("", None, False),
                 (" GRID     ", "grid_toggle", False),
+                (" MATERIALS", "material_table", False),
                 ("", None, False),
                 (" [<-BACK] ", "menu_root", False),
             ],
