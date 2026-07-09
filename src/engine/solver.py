@@ -106,10 +106,12 @@ def run_analysis_for_document(doc) -> AnalysisResult:
 
 
 def _compute_envelope(model, env, doc) -> None:
-    """Compute max/min axial forces across envelope's combos."""
+    """Compute max/min axial, moment, and shear across envelope's combos."""
     if not env.combo_ids:
         return
     max_axial = {}
+    max_moment_z = {}
+    max_shear_y = {}
     # Build a fresh model for envelope to not corrupt main results
     from src.engine.bridge import build_pynite_model
     env_model = build_pynite_model(doc)
@@ -122,8 +124,24 @@ def _compute_envelope(model, env, doc) -> None:
                     axial = -aa[1][0]  # negate: PyNite positive=compression, we want positive=tension
                 except Exception:
                     axial = 0
+                try:
+                    sa = member.shear_array('Fy', 10, combo_name=cid)
+                    shear = max(abs(s) for s in sa[1])  # max absolute shear
+                except Exception:
+                    shear = 0
+                try:
+                    ma = member.moment_array('Mz', 10, combo_name=cid)
+                    moment = max(abs(m) for m in ma[1])  # max absolute moment
+                except Exception:
+                    moment = 0
                 if mid not in max_axial or abs(axial) > abs(max_axial.get(mid, 0)):
                     max_axial[mid] = axial
+                if mid not in max_moment_z or moment > max_moment_z.get(mid, 0):
+                    max_moment_z[mid] = moment
+                if mid not in max_shear_y or shear > max_shear_y.get(mid, 0):
+                    max_shear_y[mid] = shear
         except Exception:
             pass
     env.max_axial = max_axial
+    env.max_moment_z = max_moment_z
+    env.max_shear_y = max_shear_y

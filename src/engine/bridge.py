@@ -50,7 +50,7 @@ def build_pynite_model(doc) -> FEModel3D:
     if not doc.sections:
         _ensure_default_section(doc)
     for sec in doc.sections.values():
-        model.add_section(sec.id, sec.area, sec.ix, sec.iy, sec.j)
+        model.add_section(sec.id, sec.area, sec.iy, sec.ix, sec.j)
 
     # ── 4. Add members (frame elements) ──
     for member in doc.members.values():
@@ -94,7 +94,7 @@ def build_pynite_model(doc) -> FEModel3D:
             direction = dir_map.get(ml.direction, 'Fy')
             model.add_member_dist_load(
                 ml.member_id, direction, ml.w1, ml.w2,
-                x1=0.0, x2=1.0, case=combo_name,
+                case=combo_name,
             )
 
         # Self-weight
@@ -106,7 +106,7 @@ def build_pynite_model(doc) -> FEModel3D:
                     w = -sec.area * mat.density * 9.81 / 1000  # kN/m in -Y
                     model.add_member_dist_load(
                         member.id, 'Fy', w, w,
-                        x1=0.0, x2=1.0, case=combo_name,
+                        case=combo_name,
                     )
 
     # ── 6. Add load combinations ──
@@ -120,11 +120,11 @@ def _support_flags(st: SupportType) -> tuple[bool, bool, bool, bool, bool, bool]
     """Convert SupportType to PyNite restraint flags (DX, DY, DZ, RX, RY, RZ)."""
     mapping = {
         SupportType.FREE:      (False, False, False, False, False, False),
-        SupportType.PINNED:    (True,  True,  True,  False, False, False),
+        SupportType.PINNED:    (True,  True,  True,  True,  False, False),
         SupportType.FIXED:     (True,  True,  True,  True,  True,  True),
-        SupportType.ROLLER_X:  (False, True,  True,  False, False, False),
-        SupportType.ROLLER_Y:  (True,  False, True,  False, False, False),
-        SupportType.ROLLER_Z:  (True,  True,  False, False, False, False),
+        SupportType.ROLLER_X:  (False, True,  True,  True,  False, False),
+        SupportType.ROLLER_Y:  (True,  False, True,  True,  False, False),
+        SupportType.ROLLER_Z:  (True,  True,  False, True,  False, False),
     }
     return mapping.get(st, mapping[SupportType.FREE])
 

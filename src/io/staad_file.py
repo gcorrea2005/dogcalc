@@ -55,6 +55,7 @@ STEEL_SECTIONS = {
     "HEA300":  dict(A=11300e-6, Ix=18260e-8, Iy=18260e-8, Iz=6310e-8, J=85e-8, depth=0.290, width=0.300),
     "TUBO70x4": dict(A=1056e-6, Ix=76.95e-8, Iy=76.95e-8, Iz=76.95e-8, J=153.9e-8, depth=0.070, width=0.070),
     "TUBO70X4": dict(A=1056e-6, Ix=76.95e-8, Iy=76.95e-8, Iz=76.95e-8, J=153.9e-8, depth=0.070, width=0.070),
+    "C220X65X2": dict(A=700e-6, Ix=4920.75e-9, Iy=200.19e-9, Iz=200.19e-9, J=0.933e-9, depth=0.220, width=0.065),
 }
 
 
@@ -624,9 +625,13 @@ def _parse_joint_loads(lines, i, ctx, lc):
 
 
 def _parse_member_loads(lines, i, ctx, lc):
-    """Parse MEMBER LOAD sub-section within a load case."""
+    """Parse MEMBER LOAD sub-section within a load case.
+
+    STAAD format: <member_num> UNI <dir> <magnitude>
+    Direction: GY (global Y), GZ (global Z), GX (global X)
+    """
+    from src.model.entities.load_case import MemberLoad
     i += 1
-    count = 0
     while i < len(lines):
         line = lines[i].strip()
         if not line:
@@ -634,6 +639,22 @@ def _parse_member_loads(lines, i, ctx, lc):
             continue
         if _is_section_header(line) and not line.upper().startswith("MEMBER"):
             return i - 1
+        parts = line.split()
+        if len(parts) >= 4 and parts[1].upper() == "UNI":
+            try:
+                m_num = int(parts[0])
+                direction = parts[2].upper()
+                magnitude = float(parts[3])
+                # Map STAAD direction to member load direction
+                dir_map = {"GY": "local_y", "GZ": "local_z", "GX": "axial"}
+                ml_dir = dir_map.get(direction, "local_y")
+                mid = _find_member_by_index(ctx.doc, m_num)
+                if mid:
+                    lc.add_member_load(f"{lc.id}_m{mid}", MemberLoad(
+                        member_id=mid, direction=ml_dir, w1=magnitude, w2=magnitude
+                    ))
+            except (ValueError, IndexError):
+                pass
         i += 1
     return i
 

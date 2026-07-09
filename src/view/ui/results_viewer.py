@@ -53,7 +53,7 @@ class ResultsViewer(QDockWidget):
         self._disp_table = self._make_table(["Node", "DX mm", "DY mm", "DZ mm", "Result mm"])
         self._react_table = self._make_table(["Node", "FX kN", "FY kN", "FZ kN", "MX kN-m", "MY kN-m", "MZ kN-m"])
         self._force_table = self._make_table(["Member", "Axial kN", "Shear Y kN", "Shear Z kN", "Moment Y kN-m", "Moment Z kN-m"])
-        self._code_table = self._make_table(["Member", "Section", "Axial kN", "φPn kN", "Ratio", "Status"])
+        self._code_table = self._make_table(["Member", "Section", "Pu kN", "φPn kN", "Mu kN-m", "φMn kN-m", "Vu kN", "φVn kN", "Ratio", "Status"])
 
         self._tabs.addTab(self._disp_table, " Displacements ")
         self._tabs.addTab(self._react_table, " Reactions ")
@@ -197,7 +197,7 @@ class ResultsViewer(QDockWidget):
                 if col == 0:
                     item.setForeground(QColor("#88CCFF"))
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(row, col, item)
+                table.setItem(row + offset, col, item)
 
     def _fill_code_check(self):
         """Compute and display code check results per NSR-10 / AISC 360-10."""
@@ -225,15 +225,20 @@ class ResultsViewer(QDockWidget):
         s_item.setForeground(QColor("#FFCC44"))
         s_item.setFlags(Qt.ItemFlag.NoItemFlags)
         self._code_table.setItem(0, 0, s_item)
-        self._code_table.setSpan(0, 0, 1, 6)
+        self._code_table.setSpan(0, 0, 1, 10)
         items = []
         for r in results:
             items.append((r.label, r.section, f"{r.axial_demand:.1f}",
-                          f"{r.axial_capacity:.1f}", f"{r.ratio:.3f}", r.status))
+                          f"{r.axial_capacity:.1f}",
+                          f"{r.moment_demand:.1f}",
+                          f"{r.moment_capacity:.1f}",
+                          f"{r.shear_demand:.1f}",
+                          f"{r.shear_capacity:.1f}",
+                          f"{r.ratio:.3f}", r.status))
         self._fill_table_offset(self._code_table, items, offset=1)
         # Color the status column
         for row, r in enumerate(results):
-            item = self._code_table.item(row + 1, 5)  # +1 for summary row
+            item = self._code_table.item(row + 1, 9)  # +1 for summary row
             if item:
                 if r.status == "OK":
                     item.setForeground(QColor("#44FF44"))

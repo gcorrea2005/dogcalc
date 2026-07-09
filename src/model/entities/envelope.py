@@ -18,7 +18,9 @@ class Envelope:
 
     # Computed results
     max_displacement: float = 0.0
-    max_axial: dict[str, float] = field(default_factory=dict)  # member_id → max axial
+    max_axial: dict[str, float] = field(default_factory=dict)   # member_id → max axial
+    max_moment_z: dict[str, float] = field(default_factory=dict) # member_id → max Mz
+    max_shear_y: dict[str, float] = field(default_factory=dict)  # member_id → max Vy
 
     def __repr__(self):
         return f"Envelope({self.name}: {len(self.combo_ids)} combos)"
