@@ -23,6 +23,10 @@ from PySide6.QtGui import QAction, QKeySequence
 from src.view.struct_view import StructView
 from src.view.ui.screen_menu import ScreenMenu
 from src.view.ui.command_line import CommandLine
+from src.view.ui.node_table import NodeTable
+from src.view.ui.member_table import MemberTable
+from src.view.ui.support_table import SupportTable
+from src.view.ui.std_editor import StdEditor
 from src.model.document import Document
 from src.controller.tool_manager import ToolManager
 from src.controller.tools.orbit_tool import OrbitTool
@@ -62,6 +66,82 @@ class MainWindow(QMainWindow):
 
         self._view._status_callback = self._update_status
         self._view.setFocus()
+
+        self._setup_tables()
+
+    def _setup_tables(self):
+        """Create CRUD table docks (hidden by default)."""
+        self._node_table = NodeTable(self._document)
+        self._node_table.node_changed.connect(self._on_table_changed)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._node_table)
+        self._node_table.setMinimumWidth(360)
+        # Node editor visible by default
+
+        self._member_table = MemberTable(self._document)
+        self._member_table.member_changed.connect(self._on_table_changed)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._member_table)
+        self._member_table.setMinimumWidth(420)
+        # Member editor visible by default
+
+        self._support_table = SupportTable(self._document)
+        self._support_table.supports_changed.connect(self._on_table_changed)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._support_table)
+        self._support_table.setMinimumWidth(220)
+        # Support editor visible by default
+
+        self._std_editor = StdEditor(self._document)
+        self._std_editor.model_loaded.connect(self._on_std_loaded)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._std_editor)
+        self._std_editor.setMinimumWidth(420)
+        # Editor visible by default
+
+    def _on_table_changed(self):
+        self._view.refresh_view()
+        self._update_status("Edited")
+        # Regenerate .std text from current document
+        from src.io.staad_file import build_std_text
+        self._std_editor.set_text(build_std_text(self._document))
+
+    def toggle_node_table(self):
+        if self._node_table.isVisible():
+            self._node_table.hide()
+        else:
+            self._node_table.refresh()
+            self._node_table.show()
+
+    def toggle_member_table(self):
+        if self._member_table.isVisible():
+            self._member_table.hide()
+        else:
+            self._member_table.refresh()
+            self._member_table.show()
+
+    def toggle_support_table(self):
+        if self._support_table.isVisible():
+            self._support_table.hide()
+        else:
+            self._support_table.refresh()
+            self._support_table.show()
+
+    def toggle_std_editor(self):
+        if self._std_editor.isVisible():
+            self._std_editor.hide()
+        else:
+            self._std_editor.show()
+
+    def _on_std_loaded(self, new_doc):
+        self._document = new_doc
+        self._view.document = new_doc
+        self._view.analysis_result = None
+        self._node_table._doc = new_doc
+        self._node_table.refresh()
+        self._member_table._doc = new_doc
+        self._member_table.refresh()
+        self._support_table._doc = new_doc
+        self._support_table.refresh()
+        self._view.refresh_view()
+        self._view.fit_to_model()
+        self._update_status(f"STD: {new_doc.node_count}N {new_doc.member_count}M")
 
     def _init_tools(self):
         v, d = self._view, self._document
@@ -192,6 +272,14 @@ class MainWindow(QMainWindow):
             if r and r.success:
                 self._echo(f"Max disp: {r.max_displacement()*1000:.2f} mm")
             else: self._echo("No results")
+        elif action == "node_table":
+            self.toggle_node_table()
+        elif action == "member_table":
+            self.toggle_member_table()
+        elif action == "support_table":
+            self.toggle_support_table()
+        elif action == "std_editor":
+            self.toggle_std_editor()
         else: self._echo(f"Unknown: {action}")
 
     def _run_analysis(self):
@@ -247,6 +335,7 @@ class MainWindow(QMainWindow):
             self._view.refresh_view()
             self._view.fit_to_model()
             self._echo(f"STD: {path} ({self._document.node_count}N {self._document.member_count}M)")
+            self._std_editor.load_file(path)
 
     def _on_save_std(self):
         path, _ = QFileDialog.getSaveFileName(self, "Save STAAD", "model.std", "STAAD (*.std)")

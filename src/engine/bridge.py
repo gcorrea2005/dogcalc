@@ -94,6 +94,18 @@ def build_pynite_model(doc) -> FEModel3D:
                 x1=0.0, x2=1.0, case=combo_name,
             )
 
+        # Self-weight
+        if lc.include_self_weight:
+            for member in doc.members.values():
+                sec = doc.sections.get(member.section_id)
+                mat = doc.materials.get(member.material_id)
+                if sec and mat:
+                    w = -sec.area * mat.density * 9.81 / 1000  # kN/m in -Y
+                    model.add_member_dist_load(
+                        member.id, 'Fy', w, w,
+                        x1=0.0, x2=1.0, case=combo_name,
+                    )
+
     return model
 
 

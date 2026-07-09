@@ -53,6 +53,8 @@ STEEL_SECTIONS = {
     "IPE400":  dict(A=8450e-6, Ix=23130e-8, Iy=23130e-8, Iz=1320e-8, J=51e-8, depth=0.400, width=0.180),
     "HEA200":  dict(A=5380e-6, Ix=3690e-8, Iy=3690e-8, Iz=1340e-8, J=21e-8, depth=0.190, width=0.200),
     "HEA300":  dict(A=11300e-6, Ix=18260e-8, Iy=18260e-8, Iz=6310e-8, J=85e-8, depth=0.290, width=0.300),
+    "TUBO70x4": dict(A=1056e-6, Ix=76.95e-8, Iy=76.95e-8, Iz=76.95e-8, J=153.9e-8, depth=0.070, width=0.070),
+    "TUBO70X4": dict(A=1056e-6, Ix=76.95e-8, Iy=76.95e-8, Iz=76.95e-8, J=153.9e-8, depth=0.070, width=0.070),
 }
 
 
@@ -518,6 +520,11 @@ def _parse_member_loads(lines, i, ctx, lc):
 
 def write_std(doc: Document, filepath: str):
     """Export a DogCalC Document to STAAD .std text format."""
+    Path(filepath).write_text(build_std_text(doc))
+
+
+def build_std_text(doc: Document) -> str:
+    """Generate STAAD .std text from a Document. Returns the full text."""
     lines = []
     w = lines.append
 
@@ -608,30 +615,30 @@ def write_std(doc: Document, filepath: str):
                     if nl.mz: parts.append(f"MZ {nl.mz:.2f}")
                     if parts:
                         w(f"{jid} {' '.join(parts)}")
+        if lc.include_self_weight:
+            w("SELFWEIGHT Y -1")
         w("")
 
     w("PERFORM ANALYSIS")
     w("FINISH")
 
-    Path(filepath).write_text("\n".join(lines))
+    return "\n".join(lines)
 
 
 # ── Helpers ────────────────────────────────────────
 
 def _node_index(doc, node) -> int:
-    """Get 1-based index of node."""
-    for i, (nid, _) in enumerate(doc.nodes.items(), 1):
-        if nid == node.id:
-            return i
-    return 0
+    """Get 1-based index from node label (N1→1, N3→3). Preserves original numbering."""
+    import re
+    m = re.search(r'\d+', node.label)
+    return int(m.group()) if m else 0
 
 
 def _member_index(doc, member) -> int:
-    """Get 1-based index of member."""
-    for i, (mid, _) in enumerate(doc.members.items(), 1):
-        if mid == member.id:
-            return i
-    return 0
+    """Get 1-based index from member label (M1→1, M3→3). Preserves original numbering."""
+    import re
+    m = re.search(r'\d+', member.label)
+    return int(m.group()) if m else 0
 
 
 def _lc_index(doc, lc) -> int:
