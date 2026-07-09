@@ -31,54 +31,49 @@ def run_analysis(model: FEModel3D, combo_names: list[str]) -> AnalysisResult:
     try:
         model.analyze(check_statics=True)
 
-        # ── Extract node results ──
-        node_results = {}
-        for name, node in model.nodes.items():
-            nr = NodeResult(
-                node_id=name,
-                dx=node.DX.get(primary_combo, 0.0),
-                dy=node.DY.get(primary_combo, 0.0),
-                dz=node.DZ.get(primary_combo, 0.0),
-                rx=node.RX.get(primary_combo, 0.0),
-                ry=node.RY.get(primary_combo, 0.0),
-                rz=node.RZ.get(primary_combo, 0.0),
-                rxn_fx=node.RxnFX.get(primary_combo, 0.0),
-                rxn_fy=node.RxnFY.get(primary_combo, 0.0),
-                rxn_fz=node.RxnFZ.get(primary_combo, 0.0),
-                rxn_mx=node.RxnMX.get(primary_combo, 0.0),
-                rxn_my=node.RxnMY.get(primary_combo, 0.0),
-                rxn_mz=node.RxnMZ.get(primary_combo, 0.0),
-            )
-            node_results[name] = nr
+        all_combo_results = {}
+        all_nodes = {}
+        all_members = {}
 
-        # ── Extract member results (20 segments for diagrams) ──
-        member_results = {}
-        for name, member in model.members.items():
-            segments = []
-            try:
-                shear = member.shear_results(primary_combo, 20)
-                moment = member.moment_results(primary_combo, 20)
-                if shear and moment:
+        for combo in combo_names:
+            node_results = {}
+            for name, node in model.nodes.items():
+                nr = NodeResult(
+                    node_id=name,
+                    dx=node.DX.get(combo, 0.0), dy=node.DY.get(combo, 0.0), dz=node.DZ.get(combo, 0.0),
+                    rx=node.RX.get(combo, 0.0), ry=node.RY.get(combo, 0.0), rz=node.RZ.get(combo, 0.0),
+                    rxn_fx=node.RxnFX.get(combo, 0.0), rxn_fy=node.RxnFY.get(combo, 0.0),
+                    rxn_fz=node.RxnFZ.get(combo, 0.0), rxn_mx=node.RxnMX.get(combo, 0.0),
+                    rxn_my=node.RxnMY.get(combo, 0.0), rxn_mz=node.RxnMZ.get(combo, 0.0),
+                )
+                node_results[name] = nr
+            member_results = {}
+            for name, member in model.members.items():
+                segments = []
+                try:
+                    aa = member.axial_array(20, combo_name=combo)
+                    sy = member.shear_array('Fy', 20, combo_name=combo)
+                    sz = member.shear_array('Fz', 20, combo_name=combo)
+                    my = member.moment_array('My', 20, combo_name=combo)
+                    mz = member.moment_array('Mz', 20, combo_name=combo)
                     for i in range(20):
                         segments.append({
                             'x': i / 19,
-                            'axial': shear['Fx'][i],
-                            'shear_y': shear['Fy'][i],
-                            'shear_z': shear['Fz'][i],
-                            'torsion': shear['Mx'][i],
-                            'moment_y': moment['My'][i],
-                            'moment_z': moment['Mz'][i],
+                            'axial': aa[1][i], 'shear_y': sy[1][i], 'shear_z': sz[1][i],
+                            'torsion': 0.0, 'moment_y': my[1][i], 'moment_z': mz[1][i],
                         })
-            except Exception:
-                pass
+                except Exception:
+                    pass
+                member_results[name] = MemberResult(member_id=name, segments=segments)
+            all_combo_results[combo] = {'node_results': node_results, 'member_results': member_results}
+            all_nodes = node_results
+            all_members = member_results
 
-            member_results[name] = MemberResult(member_id=name, segments=segments)
-
+        primary_combo = combo_names[0]
         return AnalysisResult(
-            success=True,
-            load_case_name=primary_combo,
-            node_results=node_results,
-            member_results=member_results,
+            success=True, load_case_name=primary_combo,
+            node_results=all_nodes, member_results=all_members,
+            combo_results=all_combo_results,
         )
 
     except Exception as e:
@@ -93,5 +88,38 @@ def run_analysis_for_document(doc) -> AnalysisResult:
     from src.engine.bridge import build_pynite_model
 
     model = build_pynite_model(doc)
-    combo_names = list(doc.load_cases.keys())
-    return run_analysis(model, combo_names)
+    if doc.load_combinations:
+        combo_names = list(doc.load_combinations.keys())
+    else:
+        combo_names = list(doc.load_cases.keys())
+    result = run_analysis(model, combo_names)
+
+    # Compute envelopes by re-running per combo (uses model.analyze separately)
+    for env in doc.envelopes.values():
+        _compute_envelope(model, env, doc)
+
+    return result
+
+
+def _compute_envelope(model, env, doc) -> None:
+    """Compute max/min axial forces across envelope's combos."""
+    if not env.combo_ids:
+        return
+    max_axial = {}
+    # Build a fresh model for envelope to not corrupt main results
+    from src.engine.bridge import build_pynite_model
+    env_model = build_pynite_model(doc)
+    for cid in env.combo_ids:
+        try:
+            env_model.analyze(check_statics=False)
+            for mid, member in env_model.members.items():
+                try:
+                    shear = member.shear_results(cid, 2)
+                    axial = shear.get('Fx', [0])[0] if 'Fx' in shear else 0
+                except Exception:
+                    axial = 0
+                if mid not in max_axial or abs(axial) > abs(max_axial.get(mid, 0)):
+                    max_axial[mid] = axial
+        except Exception:
+            pass
+    env.max_axial = max_axial

@@ -42,6 +42,7 @@ class AnalysisResult:
     node_results: dict[str, NodeResult] = field(default_factory=dict)
     member_results: dict[str, MemberResult] = field(default_factory=dict)
     errors: list[str] = field(default_factory=list)
+    combo_results: dict = field(default_factory=dict)  # {combo_name: {node_results, member_results}}
 
     def max_displacement(self) -> float:
         """Maximum resultant displacement among all nodes."""

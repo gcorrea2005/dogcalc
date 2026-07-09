@@ -64,6 +64,9 @@ def build_pynite_model(doc) -> FEModel3D:
             mat_id,
             sec_id,
         )
+        # Apply member end releases
+        if any(member.releases):
+            model.members[member.id].Releases = member.releases
 
     # ── 5. Add loads ──
     for lc in doc.load_cases.values():
@@ -105,6 +108,10 @@ def build_pynite_model(doc) -> FEModel3D:
                         member.id, 'Fy', w, w,
                         x1=0.0, x2=1.0, case=combo_name,
                     )
+
+    # ── 6. Add load combinations ──
+    for combo in doc.load_combinations.values():
+        model.add_load_combo(combo.id, factors=combo.factors)
 
     return model
 

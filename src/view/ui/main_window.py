@@ -26,6 +26,9 @@ from src.view.ui.command_line import CommandLine
 from src.view.ui.node_table import NodeTable
 from src.view.ui.member_table import MemberTable
 from src.view.ui.support_table import SupportTable
+from src.view.ui.load_case_table import LoadCaseTable
+from src.view.ui.combo_table import ComboTable
+from src.view.ui.results_viewer import ResultsViewer
 from src.view.ui.std_editor import StdEditor
 from src.model.document import Document
 from src.controller.tool_manager import ToolManager
@@ -70,30 +73,46 @@ class MainWindow(QMainWindow):
         self._setup_tables()
 
     def _setup_tables(self):
-        """Create CRUD table docks (hidden by default)."""
+        """Create CRUD table docks (hidden by default, only STD editor visible)."""
         self._node_table = NodeTable(self._document)
         self._node_table.node_changed.connect(self._on_table_changed)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._node_table)
         self._node_table.setMinimumWidth(360)
-        # Node editor visible by default
+        self._node_table.hide()
 
         self._member_table = MemberTable(self._document)
         self._member_table.member_changed.connect(self._on_table_changed)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._member_table)
         self._member_table.setMinimumWidth(420)
-        # Member editor visible by default
+        self._member_table.hide()
 
         self._support_table = SupportTable(self._document)
         self._support_table.supports_changed.connect(self._on_table_changed)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._support_table)
         self._support_table.setMinimumWidth(220)
-        # Support editor visible by default
+        self._support_table.hide()
+
+        self._load_case_table = LoadCaseTable(self._document)
+        self._load_case_table.load_cases_changed.connect(self._on_table_changed)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._load_case_table)
+        self._load_case_table.setMinimumWidth(320)
+        self._load_case_table.hide()
+
+        self._combo_table = ComboTable(self._document)
+        self._combo_table.combos_changed.connect(self._on_table_changed)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._combo_table)
+        self._combo_table.setMinimumWidth(420)
+        self._combo_table.hide()
+
+        self._results_viewer = ResultsViewer()
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._results_viewer)
+        self._results_viewer.hide()
 
         self._std_editor = StdEditor(self._document)
         self._std_editor.model_loaded.connect(self._on_std_loaded)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self._std_editor)
         self._std_editor.setMinimumWidth(420)
-        # Editor visible by default
+        # STD editor visible by default
 
     def _on_table_changed(self):
         self._view.refresh_view()
@@ -123,6 +142,26 @@ class MainWindow(QMainWindow):
             self._support_table.refresh()
             self._support_table.show()
 
+    def toggle_load_case_table(self):
+        if self._load_case_table.isVisible():
+            self._load_case_table.hide()
+        else:
+            self._load_case_table.refresh()
+            self._load_case_table.show()
+
+    def toggle_combo_table(self):
+        if self._combo_table.isVisible():
+            self._combo_table.hide()
+        else:
+            self._combo_table.refresh()
+            self._combo_table.show()
+
+    def toggle_results_viewer(self):
+        if self._results_viewer.isVisible():
+            self._results_viewer.hide()
+        else:
+            self._results_viewer.show()
+
     def toggle_std_editor(self):
         if self._std_editor.isVisible():
             self._std_editor.hide()
@@ -139,6 +178,10 @@ class MainWindow(QMainWindow):
         self._member_table.refresh()
         self._support_table._doc = new_doc
         self._support_table.refresh()
+        self._load_case_table._doc = new_doc
+        self._load_case_table.refresh()
+        self._combo_table._doc = new_doc
+        self._combo_table.refresh()
         self._view.refresh_view()
         self._view.fit_to_model()
         self._update_status(f"STD: {new_doc.node_count}N {new_doc.member_count}M")
@@ -278,6 +321,12 @@ class MainWindow(QMainWindow):
             self.toggle_member_table()
         elif action == "support_table":
             self.toggle_support_table()
+        elif action == "load_case_table":
+            self.toggle_load_case_table()
+        elif action == "combo_table":
+            self.toggle_combo_table()
+        elif action == "results_viewer":
+            self.toggle_results_viewer()
         elif action == "std_editor":
             self.toggle_std_editor()
         else: self._echo(f"Unknown: {action}")
@@ -290,6 +339,9 @@ class MainWindow(QMainWindow):
             result = run_analysis_for_document(self._document)
             if result.success:
                 self._view.analysis_result = result
+                self._results_viewer.set_results(self._document, result)
+                self._results_viewer.show()
+                self._results_viewer.raise_()
                 self._echo(f"OK | Max disp: {result.max_displacement()*1000:.2f} mm")
             else:
                 self._echo(f"Failed: {result.errors[0] if result.errors else '?'}")

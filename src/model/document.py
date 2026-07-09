@@ -28,6 +28,9 @@ class Document:
         self.materials: OrderedDict[str, Material] = OrderedDict()
         self.sections: OrderedDict[str, Section] = OrderedDict()
         self.load_cases: OrderedDict[str, LoadCase] = OrderedDict()
+        self.load_combinations: OrderedDict[str, "LoadCombination"] = OrderedDict()
+        self.envelopes: OrderedDict[str, "Envelope"] = OrderedDict()
+        self.code_params: dict = {}  # {fy: kPa, fu: kPa, code: str}
         self._undo_stack: list = []
         self._redo_stack: list = []
         self._dirty: bool = False

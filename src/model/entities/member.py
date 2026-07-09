@@ -25,6 +25,11 @@ class Member:
     section_id: str = ""        # references Section.id
     member_type: MemberType = MemberType.BEAM
     label: str = ""
+    releases: list = None  # list of 12 bools [start_dx..start_rz, end_dx..end_rz] — None = no releases
+
+    def __post_init__(self):
+        if self.releases is None:
+            self.releases = [False] * 12
 
     def __repr__(self):
         return f"Member({self.label}: {self.start_node_id[:8]}→{self.end_node_id[:8]} [{self.member_type.value}])"

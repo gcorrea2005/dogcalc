@@ -86,54 +86,98 @@ def parse_std(filepath: str) -> Document:
 
         upper = line.upper()
 
-        # Header
-        if upper.startswith("STAAD"):
-            ctx.structure_type = _parse_staad_header(line)
-        elif upper == "START JOB INFORMATION":
-            i = _skip_until(lines, i, "END JOB INFORMATION")
-        elif upper.startswith("INPUT WIDTH"):
-            pass  # ignore
-        elif upper.startswith("UNIT"):
-            ctx.units = line
+        # Envelope — must be checked BEFORE _is_section_header which also matches it
+        if upper.startswith("DEFINE ENVELOPE"):
+            i = _parse_envelope(lines, i + 1, ctx)
+            continue
 
-        # Joints
-        elif upper == "JOINT COORDINATES":
-            i = _parse_joints(lines, i, ctx)
+        # Skip parameters / code check (future)
+        if upper.startswith("PARAMETER") or upper.startswith("CHECK CODE") or upper.startswith("STEEL"):
+            i += 1
+            continue
 
-        # Members
-        elif upper == "MEMBER INCIDENCES":
-            i = _parse_members(lines, i, ctx)
+        if upper.startswith("CODE "):
+            ctx.code = line
+            i += 1
+            continue
 
-        # Member properties → sections
-        elif upper.startswith("MEMBER PROPERTY"):
-            i = _parse_member_property(lines, i, ctx)
+        if upper.startswith("FYLD "):
+            try:
+                ctx.fy = float(line.split()[1])
+            except (ValueError, IndexError):
+                pass
+            i += 1
+            continue
 
-        # Materials
-        elif upper == "DEFINE MATERIAL START":
-            i = _parse_materials(lines, i, ctx)
+        if upper.startswith("FU "):
+            try:
+                ctx.fu = float(line.split()[1])
+            except (ValueError, IndexError):
+                pass
+            i += 1
+            continue
 
-        # Material assignments
-        elif upper == "CONSTANTS":
-            i = _parse_constants(lines, i, ctx)
+        if upper.startswith("TRACK "):
+            i += 1
+            continue
 
-        # Supports
-        elif upper == "SUPPORTS":
-            i = _parse_supports(lines, i, ctx)
+        if _is_section_header(line):
+            if upper.startswith("STAAD"):
+                ctx.structure_type = _parse_staad_header(line)
+            elif upper == "START JOB INFORMATION":
+                i = _skip_until(lines, i, "END JOB INFORMATION")
+            elif upper.startswith("INPUT WIDTH"):
+                pass  # ignore
+            elif upper.startswith("UNIT"):
+                ctx.units = line
 
-        # Loads
-        elif upper.startswith("LOAD "):
-            i = _parse_load_case(lines, i, ctx)
+            # Joints
+            elif upper == "JOINT COORDINATES":
+                i = _parse_joints(lines, i, ctx)
 
-        # Analysis trigger
-        elif upper == "PERFORM ANALYSIS":
-            pass  # just a marker
+            # Members
+            elif upper == "MEMBER INCIDENCES":
+                i = _parse_members(lines, i, ctx)
 
-        # End
-        elif upper == "FINISH":
-            break
+            # Member properties → sections
+            elif upper.startswith("MEMBER PROPERTY"):
+                i = _parse_member_property(lines, i, ctx)
+
+            # Materials
+            elif upper == "DEFINE MATERIAL START":
+                i = _parse_materials(lines, i, ctx)
+
+            # Material assignments
+            elif upper == "CONSTANTS":
+                i = _parse_constants(lines, i, ctx)
+
+            # Supports
+            elif upper == "SUPPORTS":
+                i = _parse_supports(lines, i, ctx)
+
+            # Member releases
+            elif upper.startswith("MEMBER RELEASE"):
+                i = _parse_member_releases(lines, i + 1, ctx)
+
+            # Loads (but not LOAD COMBINATION)
+            elif upper.startswith("LOAD ") and not upper.startswith("LOAD COMB"):
+                i = _parse_load_case(lines, i, ctx)
+
+            # Load combinations
+            elif upper.startswith("LOAD COMBINATION") or upper.startswith("LOAD COMB"):
+                i = _parse_load_combination(lines, i, ctx)
+
+            # Analysis trigger
+            elif upper == "PERFORM ANALYSIS":
+                pass  # just a marker
+
+            # End
+            elif upper == "FINISH":
+                break
 
         i += 1
 
+    doc.code_params = {'fy': ctx.fy, 'fu': ctx.fu, 'code': ctx.code}
     return doc
 
 
@@ -145,6 +189,9 @@ class _ParseContext:
         self.units = "UNIT METER KN"
         self._default_mat_id = None
         self._default_sec_id = None
+        self.code = ""
+        self.fy = 250000  # kPa default
+        self.fu = 400000  # kPa default
 
 
 def _parse_staad_header(line: str) -> str:
@@ -366,6 +413,41 @@ def _find_member_by_index(doc, idx: int) -> str | None:
     return None
 
 
+def _parse_envelope(lines, i, ctx) -> int:
+    """Parse DEFINE ENVELOPE ... END DEFINE ENVELOPE."""
+    from src.model.entities.envelope import Envelope
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line:
+            i += 1
+            continue
+        upper = line.upper()
+        if upper.startswith("END DEFINE ENVELOPE"):
+            return i + 1
+        parts = line.split()
+        try:
+            env_idx = [j for j, p in enumerate(parts) if p.upper() == 'ENVELOPE'][0]
+        except IndexError:
+            i += 1
+            continue
+        combo_nums = parts[:env_idx]
+        env_id = parts[env_idx + 1] if env_idx + 1 < len(parts) else "1"
+        env_type = "strength"
+        if "TYPE" in upper:
+            type_idx = [j for j, p in enumerate(parts) if p.upper() == 'TYPE'][0]
+            if type_idx + 1 < len(parts):
+                env_type = parts[type_idx + 1].lower()
+        expanded = _expand_member_range(combo_nums)
+        combo_ids = [c for c in expanded if c in ctx.doc.load_combinations]
+        if combo_ids:
+            ctx.doc.envelopes[env_id] = Envelope(
+                id=env_id, name=f"ENVELOPE {env_id}",
+                combo_ids=combo_ids, envelope_type=env_type
+            )
+        i += 1
+    return i
+
+
 def _expand_member_range(ids: list[str]) -> list[str]:
     """Expand STAAD range syntax: ['1', 'TO', '6'] → ['1','2','3','4','5','6'].
 
@@ -422,6 +504,46 @@ def _map_support(stype: str) -> SupportType:
         "ROLLER": SupportType.ROLLER_X,
     }
     return mapping.get(stype, SupportType.PINNED)
+
+
+def _parse_member_releases(lines, i, ctx) -> int:
+    """Parse MEMBER RELEASE lines.
+    Format: <member_range> START|END <DOF> [<DOF> ...]
+    Example: 30 TO 33 35 TO 38 START MX MY MZ
+    """
+    dof_map = {'FX': 0, 'FY': 1, 'FZ': 2, 'MX': 3, 'MY': 4, 'MZ': 5}
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line:
+            i += 1
+            continue
+        upper = line.upper()
+        if _is_section_header(line):
+            return i - 1
+        # Parse member numbers and release spec
+        parts = line.split()
+        if 'START' in upper:
+            node_pos = 0
+            kw_idx = [j for j, p in enumerate(parts) if p.upper() == 'START'][0]
+        elif 'END' in upper:
+            node_pos = 6
+            kw_idx = [j for j, p in enumerate(parts) if p.upper() == 'END'][0]
+        else:
+            i += 1
+            continue
+        member_nums = parts[:kw_idx]
+        dofs = parts[kw_idx + 1:]
+        expanded = _expand_member_range(member_nums)
+        for m_num in expanded:
+            mid = _find_member_by_index(ctx.doc, int(m_num))
+            if mid and mid in ctx.doc.members:
+                mem = ctx.doc.members[mid]
+                for dof_name in dofs:
+                    dof_idx = dof_map.get(dof_name.upper())
+                    if dof_idx is not None:
+                        mem.releases[node_pos + dof_idx] = True
+        i += 1
+    return i
 
 
 def _parse_load_case(lines, i, ctx) -> int:
@@ -514,6 +636,45 @@ def _parse_member_loads(lines, i, ctx, lc):
             return i - 1
         i += 1
     return i
+
+
+def _parse_load_combination(lines, i, ctx) -> int:
+    """Parse LOAD COMBINATION n ... lines."""
+    from src.model.entities.load_case import LoadCombination
+    line = lines[i].strip()
+    parts = line.split()
+    combo_id = parts[2] if len(parts) > 2 else str(len(ctx.doc.load_cases) + 100)
+    combo_name = " ".join(parts[3:]) if len(parts) > 3 else f"COMBO{combo_id}"
+    factors = {}
+    i += 1
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line:
+            i += 1
+            continue
+        if line.upper().startswith("LOAD COMB"):
+            break
+        if _is_section_header(line):
+            break
+        nums = line.split()
+        for j in range(0, len(nums) - 1, 2):
+            try:
+                lc_num = int(nums[j])
+                factor = float(nums[j + 1])
+                lc_idx = 0
+                for lc_id, _ in ctx.doc.load_cases.items():
+                    lc_idx += 1
+                    if lc_idx == lc_num:
+                        factors[lc_id] = factor
+                        break
+            except (ValueError, IndexError):
+                pass
+        i += 1
+    if factors:
+        ctx.doc.load_combinations[combo_id] = LoadCombination(
+            id=combo_id, name=combo_name, factors=factors
+        )
+    return i - 1
 
 
 # ── Write Document → .std ──────────────────────────
@@ -619,6 +780,15 @@ def build_std_text(doc: Document) -> str:
             w("SELFWEIGHT Y -1")
         w("")
 
+    # Load combinations
+    for combo in doc.load_combinations.values():
+        w(f"LOAD COMBINATION {combo.id} {combo.name}")
+        for lc_id, factor in combo.factors.items():
+            # Find load case index
+            lc_idx = _lc_index_by_id(doc, lc_id)
+            w(f"{lc_idx} {factor}")
+        w("")
+
     w("PERFORM ANALYSIS")
     w("FINISH")
 
@@ -644,6 +814,13 @@ def _member_index(doc, member) -> int:
 def _lc_index(doc, lc) -> int:
     for i, (lid, _) in enumerate(doc.load_cases.items(), 1):
         if lid == lc.id:
+            return i
+    return 1
+
+
+def _lc_index_by_id(doc, lc_id: str) -> int:
+    for i, (lid, _) in enumerate(doc.load_cases.items(), 1):
+        if lid == lc_id:
             return i
     return 1
 

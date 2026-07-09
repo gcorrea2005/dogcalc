@@ -81,10 +81,8 @@ class ScreenMenu(QListWidget):
             ],
             "menu_loads": [
                 ("  LOADS   ", None, True), ("", None, False),
-                (" NODAL    ", "nodal_load", False),
-                (" MEMBER   ", "member_load", False),
-                (" CASES    ", "load_cases", False),
-                (" COMBOS   ", "load_combos", False),
+                (" LC EDIT  ", "load_case_table", False),
+                (" COMBO ED ", "combo_table", False),
                 ("", None, False),
                 (" [<-BACK] ", "menu_root", False),
             ],
@@ -96,9 +94,7 @@ class ScreenMenu(QListWidget):
             ],
             "menu_results": [
                 (" RESULTS  ", None, True), ("", None, False),
-                (" DISPLACE.", "show_displacements", False),
-                (" REACTIONS", "show_reactions", False),
-                (" FORCES   ", "show_forces", False),
+                (" RESULTS  ", "results_viewer", False),
                 (" DEFORMED ", "toggle_deformed", False),
                 (" SCALE +  ", "scale_up", False),
                 (" SCALE -  ", "scale_down", False),
@@ -108,9 +104,6 @@ class ScreenMenu(QListWidget):
             "menu_settings": [
                 (" SETTINGS ", None, True), ("", None, False),
                 (" GRID     ", "grid_toggle", False),
-                (" UNITS    ", "units", False),
-                (" MATERIALS", "materials", False),
-                (" SECTIONS ", "sections", False),
                 ("", None, False),
                 (" [<-BACK] ", "menu_root", False),
             ],

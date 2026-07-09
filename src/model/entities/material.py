@@ -19,6 +19,7 @@ class Material:
     poisson_ratio: float = 0.3          # ν
     density: float = 7850.0             # ρ (kg/m³) — steel
     yield_strength: float = 275e6       # Fy (Pa) — S275
+    ultimate_strength: float = 430e6    # Fu (Pa) — S275
 
     @property
     def shear_modulus(self) -> float:
