@@ -103,7 +103,13 @@ class ResultsViewer(QDockWidget):
         self._combo_selector.clear()
         combos = list(result.combo_results.keys()) if result.combo_results else [result.load_case_name]
         for c in combos:
-            self._combo_selector.addItem(c, c)
+            # Show friendly name for load cases
+            label = c
+            if doc:
+                lc = doc.load_cases.get(c)
+                if lc:
+                    label = f"{lc.load_type.upper()} ({lc.name.split()[0]})"
+            self._combo_selector.addItem(label, c)
         # Add envelope option
         env_names = [e.name for e in (doc.envelopes.values() if doc else [])]
         for en in env_names:
@@ -162,7 +168,11 @@ class ResultsViewer(QDockWidget):
             member = self._doc.members.get(mid) if self._doc else None
             label = member.label if member else mid[:8]
             # Get max forces from segments
-            max_axial = max(abs(s.get('axial', 0)) for s in mr.segments) if mr.segments else 0
+            # Get max absolute axial and its sign
+            axials = [s.get('axial', 0) for s in mr.segments] if mr.segments else [0]
+            max_abs = max(abs(a) for a in axials)
+            # Find the actual value (preserve sign)
+            max_axial = next((a for a in axials if abs(a) == max_abs), max_abs)
             max_sy = max(abs(s.get('shear_y', 0)) for s in mr.segments) if mr.segments else 0
             max_sz = max(abs(s.get('shear_z', 0)) for s in mr.segments) if mr.segments else 0
             max_my = max(abs(s.get('moment_y', 0)) for s in mr.segments) if mr.segments else 0
@@ -172,7 +182,10 @@ class ResultsViewer(QDockWidget):
         self._fill_table(self._force_table, items)
 
     def _fill_table(self, table, items):
-        table.setRowCount(len(items))
+        self._fill_table_offset(table, items, offset=0)
+
+    def _fill_table_offset(self, table, items, offset=0):
+        table.setRowCount(len(items) + offset)
         for row, vals in enumerate(items):
             for col, val in enumerate(vals):
                 if isinstance(val, float):
@@ -199,14 +212,28 @@ class ResultsViewer(QDockWidget):
             self._code_table.setItem(0, 0, QTableWidgetItem("Run analysis first (F5)"))
             return
         results = check_all_members(self._doc, env)
+        over = [r for r in results if r.status == 'OVERSTRESS']
+        ok = len(results) - len(over)
+        worst = results[0] if results else None
+        # Summary row at top
+        summary = f"Total: {len(results)} | OK: {ok} | OVERSTRESS: {len(over)}"
+        if worst:
+            summary += f" | Worst: {worst.label} ratio={worst.ratio:.2f}"
+        self._code_table.setRowCount(len(results) + 1)
+        # Summary
+        s_item = QTableWidgetItem(summary)
+        s_item.setForeground(QColor("#FFCC44"))
+        s_item.setFlags(Qt.ItemFlag.NoItemFlags)
+        self._code_table.setItem(0, 0, s_item)
+        self._code_table.setSpan(0, 0, 1, 6)
         items = []
         for r in results:
             items.append((r.label, r.section, f"{r.axial_demand:.1f}",
                           f"{r.axial_capacity:.1f}", f"{r.ratio:.3f}", r.status))
-        self._fill_table(self._code_table, items)
+        self._fill_table_offset(self._code_table, items, offset=1)
         # Color the status column
         for row, r in enumerate(results):
-            item = self._code_table.item(row, 5)
+            item = self._code_table.item(row + 1, 5)  # +1 for summary row
             if item:
                 if r.status == "OK":
                     item.setForeground(QColor("#44FF44"))

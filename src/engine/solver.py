@@ -59,7 +59,7 @@ def run_analysis(model: FEModel3D, combo_names: list[str]) -> AnalysisResult:
                     for i in range(20):
                         segments.append({
                             'x': i / 19,
-                            'axial': aa[1][i], 'shear_y': sy[1][i], 'shear_z': sz[1][i],
+                            'axial': -aa[1][i], 'shear_y': sy[1][i], 'shear_z': sz[1][i],
                             'torsion': 0.0, 'moment_y': my[1][i], 'moment_z': mz[1][i],
                         })
                 except Exception:
@@ -90,6 +90,10 @@ def run_analysis_for_document(doc) -> AnalysisResult:
     model = build_pynite_model(doc)
     if doc.load_combinations:
         combo_names = list(doc.load_combinations.keys())
+        # Also include individual load cases for results viewing
+        for lc_id in doc.load_cases.keys():
+            if lc_id not in combo_names:
+                combo_names.append(lc_id)
     else:
         combo_names = list(doc.load_cases.keys())
     result = run_analysis(model, combo_names)
@@ -114,8 +118,8 @@ def _compute_envelope(model, env, doc) -> None:
             env_model.analyze(check_statics=False)
             for mid, member in env_model.members.items():
                 try:
-                    shear = member.shear_results(cid, 2)
-                    axial = shear.get('Fx', [0])[0] if 'Fx' in shear else 0
+                    aa = member.axial_array(2, combo_name=cid)
+                    axial = -aa[1][0]  # negate: PyNite positive=compression, we want positive=tension
                 except Exception:
                     axial = 0
                 if mid not in max_axial or abs(axial) > abs(max_axial.get(mid, 0)):

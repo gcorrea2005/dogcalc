@@ -1,0 +1,498 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{margin=2.2cm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{babel}
+\usepackage{float}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Memoria de C\'alculo Estructural}
+\fancyhead[R]{Cercha Warren Caj\'on 3D}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+
+\title{\textbf{MEMORIA DE C\'ALCULO ESTRUCTURAL}\\[4pt]
+       \large Cercha Warren en Caj\'on 3D -- Cubierta Met\'alica}
+\author{DogCalC v0.4.0 -- An\'alisis por Elementos Finitos}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+%============================================
+\section{DATOS GENERALES}
+%============================================
+
+\begin{tabular}{ll}
+\textbf{Proyecto:}     & Cercha Warren en caj\'on 3D para cubierta \\
+\textbf{Software:}    & DogCalC v0.4.0 (motor PyNite FEM) \\
+\textbf{Norma:}       & NSR-10 (AISC 360-10 para acero) \\
+\textbf{M\'etodo:}     & Dise\~no por Resistencia \'Ultima (LRFD) \\
+\end{tabular}
+
+%============================================
+\section{GEOMETR\'IA}
+%============================================
+
+\subsection{Vista lateral -- Cara A (Z=0)}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.55, every node/.style={font=\tiny}]
+  \draw[thick, blue] (0,1.0) -- (16.52,1.0);
+  \draw[thick, red] (0,0) -- (16.52,0);
+  \draw[thin, gray] (0.00,0) -- (0.00,1.0);
+  \fill[blue] (0.00,1.0) circle (0.06) node[above] {\tiny 1};
+  \fill[red] (0.00,0) circle (0.06) node[below] {\tiny 21};
+  \draw[thin, gray] (0.90,0) -- (0.90,1.0);
+  \fill[blue] (0.90,1.0) circle (0.06) node[above] {\tiny 2};
+  \fill[red] (0.90,0) circle (0.06) node[below] {\tiny 22};
+  \draw[thin, gray] (1.80,0) -- (1.80,1.0);
+  \fill[blue] (1.80,1.0) circle (0.06) node[above] {\tiny 3};
+  \fill[red] (1.80,0) circle (0.06) node[below] {\tiny 23};
+  \draw[thin, gray] (2.70,0) -- (2.70,1.0);
+  \fill[blue] (2.70,1.0) circle (0.06) node[above] {\tiny 4};
+  \fill[red] (2.70,0) circle (0.06) node[below] {\tiny 24};
+  \draw[thin, gray] (3.60,0) -- (3.60,1.0);
+  \fill[blue] (3.60,1.0) circle (0.06) node[above] {\tiny 5};
+  \fill[red] (3.60,0) circle (0.06) node[below] {\tiny 25};
+  \draw[thin, gray] (4.50,0) -- (4.50,1.0);
+  \fill[blue] (4.50,1.0) circle (0.06) node[above] {\tiny 6};
+  \fill[red] (4.50,0) circle (0.06) node[below] {\tiny 26};
+  \draw[thin, gray] (5.40,0) -- (5.40,1.0);
+  \fill[blue] (5.40,1.0) circle (0.06) node[above] {\tiny 7};
+  \fill[red] (5.40,0) circle (0.06) node[below] {\tiny 27};
+  \draw[thin, gray] (6.30,0) -- (6.30,1.0);
+  \fill[blue] (6.30,1.0) circle (0.06) node[above] {\tiny 8};
+  \fill[red] (6.30,0) circle (0.06) node[below] {\tiny 28};
+  \draw[thin, gray] (7.13,0) -- (7.13,1.0);
+  \fill[blue] (7.13,1.0) circle (0.06) node[above] {\tiny 9};
+  \fill[red] (7.13,0) circle (0.06) node[below] {\tiny 29};
+  \draw[thin, gray] (8.03,0) -- (8.03,1.0);
+  \fill[blue] (8.03,1.0) circle (0.06) node[above] {\tiny 10};
+  \fill[red] (8.03,0) circle (0.06) node[below] {\tiny 30};
+  \draw[thin, gray] (8.93,0) -- (8.93,1.0);
+  \fill[blue] (8.93,1.0) circle (0.06) node[above] {\tiny 11};
+  \fill[red] (8.93,0) circle (0.06) node[below] {\tiny 31};
+  \draw[thin, gray] (9.83,0) -- (9.83,1.0);
+  \fill[blue] (9.83,1.0) circle (0.06) node[above] {\tiny 12};
+  \fill[red] (9.83,0) circle (0.06) node[below] {\tiny 32};
+  \draw[thin, gray] (10.73,0) -- (10.73,1.0);
+  \fill[blue] (10.73,1.0) circle (0.06) node[above] {\tiny 13};
+  \fill[red] (10.73,0) circle (0.06) node[below] {\tiny 33};
+  \draw[thin, gray] (11.55,0) -- (11.55,1.0);
+  \fill[blue] (11.55,1.0) circle (0.06) node[above] {\tiny 14};
+  \fill[red] (11.55,0) circle (0.06) node[below] {\tiny 34};
+  \draw[thin, gray] (12.45,0) -- (12.45,1.0);
+  \fill[blue] (12.45,1.0) circle (0.06) node[above] {\tiny 15};
+  \fill[red] (12.45,0) circle (0.06) node[below] {\tiny 35};
+  \draw[thin, gray] (13.35,0) -- (13.35,1.0);
+  \fill[blue] (13.35,1.0) circle (0.06) node[above] {\tiny 16};
+  \fill[red] (13.35,0) circle (0.06) node[below] {\tiny 36};
+  \draw[thin, gray] (14.25,0) -- (14.25,1.0);
+  \fill[blue] (14.25,1.0) circle (0.06) node[above] {\tiny 17};
+  \fill[red] (14.25,0) circle (0.06) node[below] {\tiny 37};
+  \draw[thin, gray] (15.15,0) -- (15.15,1.0);
+  \fill[blue] (15.15,1.0) circle (0.06) node[above] {\tiny 18};
+  \fill[red] (15.15,0) circle (0.06) node[below] {\tiny 38};
+  \draw[thin, gray] (16.05,0) -- (16.05,1.0);
+  \fill[blue] (16.05,1.0) circle (0.06) node[above] {\tiny 19};
+  \fill[red] (16.05,0) circle (0.06) node[below] {\tiny 39};
+  \draw[thin, gray] (16.52,0) -- (16.52,1.0);
+  \fill[blue] (16.52,1.0) circle (0.06) node[above] {\tiny 20};
+  \fill[red] (16.52,0) circle (0.06) node[below] {\tiny 40};
+  \draw[thin, green!50!black] (0.00,1.0) -- (0.90,0);
+  \draw[thin, green!50!black] (0.90,1.0) -- (1.80,0);
+  \draw[thin, green!50!black] (1.80,1.0) -- (2.70,0);
+  \draw[thin, green!50!black] (2.70,1.0) -- (3.60,0);
+  \draw[thin, green!50!black] (3.60,1.0) -- (4.50,0);
+  \draw[thin, green!50!black] (4.50,1.0) -- (5.40,0);
+  \draw[thin, green!50!black] (5.40,1.0) -- (6.30,0);
+  \draw[thin, green!50!black] (6.30,1.0) -- (7.13,0);
+  \draw[thin, green!50!black] (7.13,1.0) -- (8.03,0);
+  \draw[thin, green!50!black] (8.03,1.0) -- (8.93,0);
+  \draw[thin, green!50!black] (8.93,0) -- (9.83,1.0);
+  \draw[thin, green!50!black] (9.83,0) -- (10.73,1.0);
+  \draw[thin, green!50!black] (10.73,0) -- (11.55,1.0);
+  \draw[thin, green!50!black] (11.55,0) -- (12.45,1.0);
+  \draw[thin, green!50!black] (12.45,0) -- (13.35,1.0);
+  \draw[thin, green!50!black] (13.35,0) -- (14.25,1.0);
+  \draw[thin, green!50!black] (14.25,0) -- (15.15,1.0);
+  \draw[thin, green!50!black] (15.15,0) -- (16.05,1.0);
+  \draw[thin, green!50!black] (16.05,0) -- (16.52,1.0);
+  \node[blue, font=\tiny] at (0.45,1.18) {M1 (CS)};
+  \node[blue, font=\tiny] at (8.48,1.18) {M10 (CS)};
+  \node[red, font=\tiny] at (0.45,-0.28) {M20 (CI)};
+  \node[green!50!black, font=\tiny] at (8.48,0.65) {D};
+  \node[gray, font=\tiny] at (8.93+0.18,0.5) {V};
+  \draw[<->] (0,-0.5) -- (16.52,-0.5) node[midway,below] {Luz: 16.52 m};
+  \draw[<->] (16.52+0.5,0) -- (16.52+0.5,1.0) node[midway,right] {h=1.0m};
+  \node[blue, right, font=\tiny] at (0,-0.9) {CS = Cordon Superior};
+  \node[red, right, font=\tiny] at (7,-0.9) {CI = Cordon Inferior};
+  \node[green!50!black, right, font=\tiny] at (0,-1.2) {D = Diagonal (10 desc + 9 asc)};
+  \node[gray, right, font=\tiny] at (7,-1.2) {V = Montante vertical};
+\end{tikzpicture}
+\caption{Vista lateral de la cercha Warren. Nodos 1--20 en cord\'on superior (azul),
+nodos 21--40 en cord\'on inferior (rojo). Diagonales en verde, montantes en gris.}
+\label{fig:vista-lateral}
+\end{figure}
+
+\subsection{Secci\'on transversal -- Caj\'on 3D}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.5, every node/.style={font=\tiny}]
+  \draw[thick] (0,0) rectangle (0.3,1.0);
+  \draw[thick] (2.0,0) rectangle (2.3,1.0);
+  \draw[thin, dashed] (0,0) -- (2.0,0);
+  \draw[thin, dashed] (0,1.0) -- (2.0,1.0);
+  \draw[thin, dashed] (0.3,0) -- (2.3,0);
+  \draw[thin, dashed] (0.3,1.0) -- (2.3,1.0);
+  \fill (0,0) circle (0.05) node[left] {\tiny N21};
+  \fill (0,1.0) circle (0.05) node[left] {\tiny N1};
+  \fill (0.3,0) circle (0.05) node[right] {\tiny N22};
+  \fill (0.3,1.0) circle (0.05) node[right] {\tiny N2};
+  \fill (2.0,0) circle (0.05) node[left] {\tiny N61};
+  \fill (2.0,1.0) circle (0.05) node[left] {\tiny N41};
+  \fill (2.3,0) circle (0.05) node[right] {\tiny N62};
+  \fill (2.3,1.0) circle (0.05) node[right] {\tiny N42};
+  \draw[<->] (0.3,0.5) -- (2.0,0.5) node[midway,above] {0.28 m};
+  \node at (0.15,-0.3) {\tiny Cara A (Z=0)};
+  \node at (2.15,-0.3) {\tiny Cara B (Z=0.28)};
+  \node[right] at (3.0,1.0) {\small TUBO 70$\times$70$\times$4};
+  \node[right] at (3.0,0.7) {$A = 1,056$ mm$^2$};
+  \node[right] at (3.0,0.4) {$I = 769,472$ mm$^4$};
+  \node[right] at (3.0,0.1) {$r = 27.0$ mm};
+\end{tikzpicture}
+\caption{Secci\'on transversal del caj\'on. Dos cerchas paralelas separadas 0.28 m,
+unidas por montantes transversales en cada nudo.}
+\label{fig:seccion}
+\end{figure}
+
+\subsection{Esquema de numeraci\'on de miembros}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.7, every node/.style={font=\tiny}]
+  % Simplified truss with member numbering
+  \draw[thick] (0,1) -- (4,1);
+  \draw[thick] (0,0) -- (4,0);
+  \foreach \x in {0,1,2,3,4} {
+    \draw[thin, gray] (\x,0) -- (\x,1);
+    \fill[blue] (\x,1) circle (0.04);
+    \fill[red] (\x,0) circle (0.04);
+  }
+  \draw[green!50!black] (0,1) -- (1,0);
+  \draw[green!50!black] (1,0) -- (2,1);
+  \draw[green!50!black] (2,1) -- (3,0);
+  \draw[green!50!black] (3,0) -- (4,1);
+  
+  % Member numbers
+  \node[blue, above] at (0.5,1.15) {M1};
+  \node[blue, above] at (1.5,1.15) {M2};
+  \node[blue, above] at (2.5,1.15) {M3};
+  \node[blue, above] at (3.5,1.15) {M4};
+  \node[red, below] at (0.5,-0.2) {M20};
+  \node[red, below] at (1.5,-0.2) {M21};
+  \node[red, below] at (2.5,-0.2) {M22};
+  \node[red, below] at (3.5,-0.2) {M23};
+  \node[green!50!black] at (0.5,0.6) {M39};
+  \node[green!50!black] at (1.5,0.6) {M40};
+  \node[green!50!black] at (2.5,0.6) {M41};
+  \node[green!50!black] at (3.5,0.6) {M42};
+  \node[gray] at (0.15,0.5) {M58};
+  \node[gray] at (1.15,0.5) {M59};
+  \node[gray] at (2.15,0.5) {M60};
+  \node[gray] at (3.15,0.5) {M61};
+  \draw[<->] (0,-0.5) -- (4,-0.5) node[midway,below] {4 paneles (ejemplo)};
+\end{tikzpicture}
+\caption{Ejemplo de numeraci\'on de miembros en 4 paneles. Los miembros 1--19 son
+cord\'on superior, 20--38 cord\'on inferior, 39--57 diagonales, 58--77 montantes
+verticales (Cara A). Cara B repite numeraci\'on 78--154.}
+\label{fig:numeracion}
+\end{figure}
+
+\subsection{Datos geom\'etricos}
+
+\begin{center}
+\begin{tabular}{ll}
+\textbf{Tipo:}              & Cercha Warren en caj\'on 3D (dos caras paralelas) \\
+\textbf{Luz total:}         & 16.52 m \\
+\textbf{Altura:}            & 1.00 m \\
+\textbf{Separaci\'on caras:} & 0.28 m (ancho del caj\'on) \\
+\textbf{N\'umero de paneles:} & 19 \\
+\textbf{Nodos totales:}     & 80 (40 por cara) \\
+\textbf{Miembros totales:}  & 194 \\
+\end{tabular}
+\end{center}
+
+\subsection{Distribuci\'on de paneles}
+
+\begin{center}
+\begin{tabular}{c|c}
+\toprule
+\textbf{Cantidad} & \textbf{Ancho (m)} \\
+\midrule
+7  & 0.900 \\
+1  & 0.825 \\
+4  & 0.900 \\
+1  & 0.825 \\
+5  & 0.900 \\
+1  & 0.470 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{MATERIALES Y SECCIONES}
+%============================================
+
+\begin{tabular}{ll}
+\textbf{Acero:}        & ASTM A36 / A572 Gr. 50 equivalente \\
+\textbf{M\'odulo E:}   & $E = 200\,000$ MPa \\
+\textbf{Poisson:}      & $\nu = 0.30$ \\
+\textbf{Densidad:}     & $\rho = 7\,850$ kg/m\textsuperscript{3} \\
+\textbf{Fluencia:}     & $F_y = 250$ MPa \\
+\textbf{\'Ultimo:}       & $F_u = 400$ MPa \\
+\end{tabular}
+
+\subsection{Perfil}
+
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{Propiedad} & \textbf{Valor} \\
+\midrule
+Designaci\'on   & TUBO 70$\times$70$\times$4 mm \\
+\'Area ($A_g$)   & 1\,056 mm\textsuperscript{2} \\
+Inercia ($I$)   & 769\,472 mm\textsuperscript{4} \\
+Radio de giro ($r$) & 27.0 mm \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{CARGAS}
+%============================================
+
+Cargas aplicadas en nudos del cord\'on superior de ambas caras,
+ancho aferente de 2.0 m (1.0 m a cada lado).
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Carga} & \textbf{kN/m\textsuperscript{2}} & \textbf{Total (kN)} \\
+\midrule
+Peso propio (D)     & 0.80  & 52.86 \\
+Cubierta viva (Lr)  & 0.50  & 33.04 \\
+Viento (W)          & 0.40  & 26.43 \\
+Granizo (G)         & 1.00  & 66.08 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Casos de carga}
+
+\begin{enumerate}
+    \item \textbf{DEAD} -- Peso propio + carga muerta (D)
+    \item \textbf{ROOF LIVE} -- Carga viva de cubierta (Lr)
+    \item \textbf{WIND} -- Viento (W)
+    \item \textbf{GRANIZO} -- Granizo (G)
+\end{enumerate}
+
+Todos incluyen peso propio estructural (SELFWEIGHT Y -1).
+
+%============================================
+\section{COMBINACIONES NSR-10}
+%============================================
+
+Combinaciones de Resistencia \'Ultima (sin sismo):
+
+\begin{center}
+\begin{tabular}{cll}
+\toprule
+\textbf{Combo} & \textbf{Nombre} & \textbf{Factores} \\
+\midrule
+101 & 1.4D          & $1.4\,D$ \\
+102 & 1.2D+1.6Lr     & $1.2\,D + 1.6\,Lr$ \\
+103 & 1.2D+1.6G      & $1.2\,D + 1.6\,G$ \\
+104 & 1.2D+1.6Lr+0.5W & $1.2\,D + 1.6\,Lr + 0.5\,W$ \\
+105 & 1.2D+1.6G+0.5W  & $1.2\,D + 1.6\,G + 0.5\,W$ \\
+106 & 1.2D+1.0W+0.5Lr & $1.2\,D + 1.0\,W + 0.5\,Lr$ \\
+107 & 1.2D+1.0W+0.5G  & $1.2\,D + 1.0\,W + 0.5\,G$ \\
+108 & 0.9D+1.0W       & $0.9\,D + 1.0\,W$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Envolvente de dise\~no: ENVELOPE 1 TYPE STRENGTH (combos 101--108).
+
+%============================================
+\section{AN\'ALISIS ESTRUCTURAL}
+%============================================
+
+Modelo 3D: 80 nudos, 194 elementos frame (6 GDL/nudo), conexiones r\'igidas.
+
+\textbf{Apoyos:}
+\begin{itemize}
+    \item N21 y N61 (izquierda): Fijo (PINNED)
+    \item N40 y N80 (derecha): Deslizante en X (ROLLER)
+\end{itemize}
+
+\subsection{Reacciones -- Combo 105 (1.2D+1.6G+0.5W)}
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Nudo} & \textbf{FX (kN)} & \textbf{FY (kN)} & \textbf{FZ (kN)} \\
+\midrule
+N21 (Fijo)     & --    & 48.4  & -- \\
+N61 (Fijo)     & --    & 46.8  & -- \\
+N40 (Rodillo)  & 0     & 48.4  & -- \\
+N80 (Rodillo)  & 0     & 46.8  & -- \\
+\midrule
+\textbf{Total} & 0     & 190.4 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Desplazamiento m\'aximo: $\delta_{max} \approx 55$ mm $\approx L / 300$.
+
+%============================================
+\section{FUERZAS AXIALES}
+%============================================
+
+Envolvente de dise\~no, Cara A (Z=0). $(+)$ tracci\'on, $(-)$ compresi\'on.
+
+\subsection{Cord\'on Superior (compresi\'on)}
+
+\begin{center}
+\begin{tabular}{lr|lr}
+\toprule
+\textbf{Miembro} & \textbf{Axial (kN)} & \textbf{Miembro} & \textbf{Axial (kN)} \\
+\midrule
+M1  & --94.6  & M11 & --454.5 \\
+M2  & --179.1 & M12 & --441.9 \\
+M3  & --252.4 & M13 & --418.0 \\
+M4  & --314.7 & M14 & --386.6 \\
+M5  & --365.8 & M15 & --341.5 \\
+M6  & --406.0 & M16 & --285.3 \\
+M7  & --435.0 & M17 & --218.0 \\
+M8  & --451.6 & M18 & --140.0 \\
+M9  & \textbf{--459.4} & M19 & --49.1 \\
+M10 & --455.9 &     & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Cord\'on Inferior (tracci\'on)}
+
+\begin{center}
+\begin{tabular}{lr|lr}
+\toprule
+\textbf{Miembro} & \textbf{Axial (kN)} & \textbf{Miembro} & \textbf{Axial (kN)} \\
+\midrule
+M20 & --51.8  & M30 & 436.0 \\
+M21 & 47.9   & M31 & 413.1 \\
+M22 & 136.7  & M32 & 382.5 \\
+M23 & 214.4  & M33 & 338.3 \\
+M24 & 281.1  & M34 & 283.1 \\
+M25 & 336.6  & M35 & 216.8 \\
+M26 & 381.1  & M36 & 139.6 \\
+M27 & 414.5  & M37 & 50.4 \\
+M28 & 435.7  & M38 & 1.4 \\
+M29 & \textbf{447.9} &     & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Diagonales y Montantes}
+
+\begin{center}
+\begin{tabular}{lr|lr}
+\toprule
+\multicolumn{2}{c}{\textbf{Diagonales}} & \multicolumn{2}{c}{\textbf{Montantes}} \\
+\midrule
+M39 & 141.5  (T) & M58 & --111.8 (C) \\
+M56 & 129.8  (T) & M77 & --105.0 (C) \\
+M40 & 126.1  (T) & M59 & --102.0 (C) \\
+M55 & 112.5  (T) & M76 & --96.3 (C) \\
+M41 & 109.9  (T) & M75 & --92.1 (C) \\
+M57 & 105.2  (T) & M60 & --90.3 (C) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{CODE CHECK NSR-10}
+%============================================
+
+\subsection{Capacidades}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Modo} & \textbf{$\phi P_n$} \\
+\midrule
+Tracci\'on (AISC D2):  & $\phi_t P_n = 0.9 \times 250 \times 1056 = \mathbf{238}$ kN \\
+Compresi\'on (AISC E3): & $\phi_c P_n = 0.9 \times F_{cr} \times A_g = \mathbf{224}$ kN \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Resultados}
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+\textbf{Concepto} & \textbf{Valor} \\
+\midrule
+Total miembros verificados & 194 \\
+Miembros OK                  & 144 \\
+Miembros SOBREESFORZADOS     & \textbf{50} \\
+Peor ratio demanda/capacidad & \textbf{2.05} (M9, cord\'on superior) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{CONCLUSIONES}
+%============================================
+
+\begin{enumerate}
+    \item La cercha Warren en caj\'on 3D es estructuralmente estable.
+          El an\'alisis FEM confirma equilibrio para las 12 combinaciones.
+
+    \item El perfil \textbf{TUBO 70$\times$70$\times$4 mm es INSUFICIENTE}
+          para el combo 105 (1.2D + 1.6G + 0.5W). El cord\'on superior
+          alcanza 459.4 kN contra 224 kN de capacidad (ratio = 2.05).
+
+    \item \textbf{Se recomienda} aumentar secci\'on a:
+          \textbf{TUBO 100$\times$100$\times$5 mm} ($A = 1,900$ mm\textsuperscript{2},
+          $\phi_c P_n \approx 400$ kN).
+
+    \item El desplazamiento m\'aximo ($\approx 55$ mm, $L/300$) es aceptable
+          para cubierta sin requisitos estrictos de servicio.
+
+    \item Las conexiones se modelaron r\'igidas. Para an\'alisis m\'as
+          conservador, considerar liberaciones de momento en diagonales.
+
+    \item Verificar uniones soldadas y placa base seg\'un NSR-10 F.2.
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+\rule{5cm}{0.5pt}\\
+\textbf{Fin de la Memoria de C\'alculo}
+\end{center}
+
+\end{document}

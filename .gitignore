@@ -26,3 +26,9 @@ results.xlsx
 dist/
 build/
 *.spec
+
+# LaTeX build artifacts
+informes/*.aux
+informes/*.log
+informes/*.out
+informes/*.toc

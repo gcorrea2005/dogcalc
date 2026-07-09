@@ -47,21 +47,21 @@ def check_member_axial(member_id: str, label: str, section: dict, material: dict
     if axial_force >= 0:
         # TENSION — AISC D2
         phi_yield = 0.90
-        Pn_yield = Fy * A / 1000  # kN
+        Pn_yield = Fy * A  # kN (Fy in kPa × A in m² = kN)
         capacity = phi_yield * Pn_yield
     else:
         # COMPRESSION — AISC E3
         phi_c = 0.90
         KL_r = k_factor * length / r if r > 0 else 200
-        Fe = math.pi**2 * E / (KL_r**2) / 1000  # kN/m² → kN (Euler stress in kPa)
-        lambda_c = math.sqrt(Fy / (Fe * 1000)) if Fe > 0 else 3.0  # Fe in kPa
+        Fe = math.pi**2 * E / (KL_r**2)  # kPa (Euler stress)
+        lambda_c = math.sqrt(Fy / Fe) if Fe > 0 else 3.0
 
         if lambda_c <= 1.5:
             Fcr = (0.658 ** (lambda_c ** 2)) * Fy
         else:
             Fcr = (0.877 / (lambda_c ** 2)) * Fy
 
-        Pn = Fcr * A / 1000  # kN
+        Pn = Fcr * A  # kN
         capacity = phi_c * Pn
 
     ratio = abs_axial / capacity if capacity > 0 else 999.0
