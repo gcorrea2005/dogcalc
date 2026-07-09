@@ -150,8 +150,8 @@ class ResultsViewer(QDockWidget):
                 continue
             node = self._doc.nodes.get(nid) if self._doc else None
             label = node.label if node else nid[:8]
-            items.append((label, nr.rxn_fx/1000, nr.rxn_fy/1000, nr.rxn_fz/1000,
-                          nr.rxn_mx/1000, nr.rxn_my/1000, nr.rxn_mz/1000))
+            items.append((label, nr.rxn_fx, nr.rxn_fy, nr.rxn_fz,
+                          nr.rxn_mx, nr.rxn_my, nr.rxn_mz))
         self._fill_table(self._react_table, items)
 
     def _fill_forces(self):
@@ -162,11 +162,11 @@ class ResultsViewer(QDockWidget):
             member = self._doc.members.get(mid) if self._doc else None
             label = member.label if member else mid[:8]
             # Get max forces from segments
-            max_axial = max(abs(s.get('axial', 0)) for s in mr.segments) / 1000 if mr.segments else 0
-            max_sy = max(abs(s.get('shear_y', 0)) for s in mr.segments) / 1000 if mr.segments else 0
-            max_sz = max(abs(s.get('shear_z', 0)) for s in mr.segments) / 1000 if mr.segments else 0
-            max_my = max(abs(s.get('moment_y', 0)) for s in mr.segments) / 1000 if mr.segments else 0
-            max_mz = max(abs(s.get('moment_z', 0)) for s in mr.segments) / 1000 if mr.segments else 0
+            max_axial = max(abs(s.get('axial', 0)) for s in mr.segments) if mr.segments else 0
+            max_sy = max(abs(s.get('shear_y', 0)) for s in mr.segments) if mr.segments else 0
+            max_sz = max(abs(s.get('shear_z', 0)) for s in mr.segments) if mr.segments else 0
+            max_my = max(abs(s.get('moment_y', 0)) for s in mr.segments) if mr.segments else 0
+            max_mz = max(abs(s.get('moment_z', 0)) for s in mr.segments) if mr.segments else 0
             items.append((label, max_axial, max_sy, max_sz, max_my, max_mz))
         items.sort(key=lambda x: abs(x[1]), reverse=True)
         self._fill_table(self._force_table, items)
