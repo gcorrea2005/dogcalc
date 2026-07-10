@@ -548,24 +548,33 @@ se cancela entre modulos adyacentes ($\pm 13$ kN $\rightarrow$ neto $<1$ kN).
 %============================================
 \section{WARREN --- MATERIALES}
 %============================================
-Perfil TUBO 70$\times$70$\times$4 mm en acero ASTM A36.
+Dos tipos de seccion segun el miembro:
 
 \begin{center}
-\begin{tabular}{l>{\sffamily}c}
+\begin{tabular}{l >{\sffamily}c}
 \toprule
 \rowcolor{primary!15}
 \multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Propiedad} & \multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Valor} \\
 \midrule
-Designacion & TUBO 70$\times$70$\times$4 mm \\
-Area ($A_g$) & 1\,056 mm\textsuperscript{2} \\
+\textbf{Cuerdas (CS y CI)} & TUBO 70$\times$70$\times$4 + 2 $\angle$ 3''$\times$1/4'' \\
+Area total & 2\,914 mm\textsuperscript{2} \\
+Inercia fuerte ($I_x$) & 7\,649$\times$10$^3$ mm\textsuperscript{4} \\
+Inercia debil ($I_y$) & 1\,802$\times$10$^3$ mm\textsuperscript{4} \\
+Radio de giro min ($r_{min}$) & 24.9 mm \\
+\rowcolor{tablerow}
+\textbf{Diagonales y montantes} & TUBO 70$\times$70$\times$4 mm \\
+Area & 1\,056 mm\textsuperscript{2} \\
 Inercia ($I$) & 769\,472 mm\textsuperscript{4} \\
 Radio de giro ($r$) & 27.0 mm \\
-$E$ & 200 GPa \\
-$F_y$ & 345 MPa (Grado 50) \\
-$F_u$ & 450 MPa \\
+\midrule
+Acero & Grado 50 ($F_y = 345$ MPa, $F_u = 450$ MPa) \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+La seccion compuesta de las cuerdas consiste en el tubo cuadrado 70$\times$70$\times$4 mm
+con dos angulos L 3''$\times$1/4'' (76$\times$76$\times$6.35 mm) soldados a las caras
+opuestas, formando un perfil asimetrico con la mayor inercia en el plano de la cercha.
 
 %============================================
 \section{WARREN --- CARGAS Y COMBINACIONES}
@@ -743,20 +752,20 @@ $\phi_c P_n = 0.90 \times F_{cr} \times A_g = 0.90 \times 317{\times}10^3 \times
 
 \subsection{Resultados -- miembros criticos}
 \begin{center}
-\begin{tabular}{l c c c c c c}
+\begin{tabular}{l l c c c c c}
 \toprule
 \tableheadrow
-\textbf{Miembro} & \textbf{Tipo} & \textbf{L (m)} & \textbf{Pu (kN)} & \textbf{$\phi$Pn (kN)} & \textbf{Ratio} & \textbf{Estado} \\
+\textbf{Miembro} & \textbf{Seccion} & \textbf{Tipo} & \textbf{L (m)} & \textbf{Pu (kN)} & \textbf{$\phi$Pn (kN)} & \textbf{Ratio} \\
 \midrule
-M16  & CS-comp & 0.90 & $-731.9$ & 302 & \textbf{2.42} & \textcolor{accent}{OVERSTRESS} \\
-M17  & CS-comp & 0.90 & $-731.9$ & 302 & 2.42 & \textcolor{accent}{OVERSTRESS} \\
-M10  & CS-comp & 0.90 & $-731.9$ & 302 & 2.42 & \textcolor{accent}{OVERSTRESS} \\
-M87  & CS-comp & 0.90 & $-731.9$ & 302 & 2.42 & \textcolor{accent}{OVERSTRESS} \\
+M87  & TUBO+2L & CS-comp & 0.90 & $-758.1$ & 822 & \textbf{0.922} \\
+M10  & TUBO+2L & CS-comp & 0.90 & $-758.1$ & 822 & 0.922 \\
+M11  & TUBO+2L & CS-comp & 0.90 & $-757.9$ & 822 & 0.922 \\
+M88  & TUBO+2L & CS-comp & 0.90 & $-757.9$ & 822 & 0.922 \\
 \rowcolor{tablerow}
-M31  & CI-trac & 0.90 & $+730.2$ & 328 & \textbf{2.23} & \textcolor{accent}{OVERSTRESS} \\
-M30  & CI-trac & 0.90 & $+729.9$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \\
-M106 & CI-trac & 0.90 & $+730.2$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \\
-M107 & CI-trac & 0.90 & $+729.9$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \\
+M29  & TUBO+2L & CI-trac & 0.90 & $+756.8$ & 905 & \textbf{0.836} \\
+M106 & TUBO+2L & CI-trac & 0.90 & $+756.8$ & 905 & 0.836 \\
+M30  & TUBO+2L & CI-trac & 0.90 & $+756.2$ & 905 & 0.836 \\
+M107 & TUBO+2L & CI-trac & 0.90 & $+756.2$ & 905 & 0.836 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -769,23 +778,23 @@ M107 & CI-trac & 0.90 & $+729.9$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \
 \textbf{Concepto} & \textbf{Valor} \\
 \midrule
 Total miembros & 194 \\
-OK & 142 \\
+OK & \textcolor{secondary!80!black}{194} \\
 \rowcolor{tablerow}
-SOBREESFORZADOS & \textcolor{accent}{\textbf{52}} \\
-Peor compresion & \textbf{2.42} (CS, M16/M17) \\
+SOBREESFORZADOS & \textcolor{accent}{\textbf{0}} \\
+Peor compresion & \textbf{0.922} (M87/M10, CS) \\
 \rowcolor{tablerow}
-Peor traccion & \textbf{2.23} (CI, M31) \\
+Peor traccion & \textbf{0.836} (M29/M106, CI) \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-{\sffamily\small\color{accent}
-\textbf{ATENCION:} El perfil TUBO 70$\times$70$\times$4 mm fue dimensionado originalmente
-para la cercha Warren sin cargas de transicion. Al incorporar las reacciones de las
-cerchas de transicion (ejes B y C), las fuerzas axiales en las cuerdas se incrementaron
-de $\sim$150 kN a $\sim$730 kN, superando ampliamente la capacidad del perfil.
-Se requiere una seccion mayor para las cuerdas (TUBO 114$\times$5 mm o superior),
-mientras que las diagonales y montantes permanecen dentro de capacidad.
+{\sffamily\small\color{secondary!80!black}
+\textbf{Nota:} Las cuerdas fueron reforzadas con 2 angulos L 3''$\times$1/4''
+soldados al tubo 70$\times$70$\times$4 mm. La seccion compuesta resultante
+($A=2{,}914$ mm$^2$) aumenta la capacidad axial de 302 kN a 822 kN en compresion
+y de 328 kN a 905 kN en traccion, suficiente para las cargas de las cerchas
+de transicion. Las diagonales y montantes (TUBO 70$\times$70$\times$4 sin reforzar)
+permanecen dentro de capacidad con ratios menores a 0.50.
 }
 
 %============================================
@@ -798,14 +807,16 @@ mientras que las diagonales y montantes permanecen dentro de capacidad.
     \item \textbf{Cercha de transicion Warren 2D:} Todos los 33 miembros OK con TUBO 70$\times$70$\times$4 mm
           Grado 50. Ratio maximo \textbf{0.267} (cordon superior a compresion). Reaccion por modulo
           de 30.23 kN D, 19.48 kN Lr, 15.90 kN W y 37.40 kN G, transmitidas a la cercha principal.
-    \item \textbf{Cercha Warren 3D con cargas de transicion:} \textcolor{accent}{NO PASA} con TUBO 70$\times$70$\times$4 mm.
-          Las cargas de las cerchas de transicion incrementan las fuerzas axiales en las cuerdas
-          a $\sim$730 kN (vs $\sim$150 kN originales), resultando en \textbf{52 miembros sobre-esforzados}
-          con ratios de hasta \textbf{2.42} (compresion) y \textbf{2.23} (traccion).
-          Las diagonales y montantes permanecen dentro de capacidad.
-    \item \textbf{Rediseno requerido:} Se necesita una seccion tubular de mayor area para las
-          cuerdas del cajon Warren. Opciones recomendadas: TUBO 114$\times$5 mm ($A\approx 1{,}710$ mm$^2$)
-          o TUBO 140$\times$6 mm ($A\approx 2{,}520$ mm$^2$).
+    \item \textbf{Cercha Warren 3D con cuerdas reforzadas:} \textcolor{secondary!80!black}{PASA} con la
+          seccion compuesta TUBO 70$\times$70$\times$4 + 2$\angle$3''$\times$1/4''.
+          Las cargas de transicion incrementaron las fuerzas axiales a $\sim$760 kN,
+          pero la seccion reforzada ($A=2{,}914$ mm$^2$) proporciona capacidad de
+          822 kN en compresion y 905 kN en traccion. \textbf{194/194 miembros OK},
+          peor ratio \textbf{0.922} (compresion en cuerda superior).
+    \item \textbf{Rediseno completado:} La adicion de dos angulos L 3''$\times$1/4'' soldados
+          a las caras opuestas del tubo 70$\times$70$\times$4 en las cuerdas del cajon Warren
+          resuelve el incremento de carga inducido por las cerchas de transicion.
+          Las diagonales y montantes (tubo simple) no requieren refuerzo.
 \end{enumerate}
 
 % ═══════════════════════════════════════════
