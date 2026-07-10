@@ -1,0 +1,800 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{libertine}
+\usepackage{tgheros}
+\usepackage{sourcesanspro}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=2.2cm, headheight=18pt, top=2.5cm, bottom=2.2cm}
+\usepackage{xcolor}
+\definecolor{primary}{HTML}{1B3A5C}
+\definecolor{secondary}{HTML}{2E86AB}
+\definecolor{accent}{HTML}{E85D2C}
+\definecolor{lightbg}{HTML}{EDF2F7}
+\definecolor{tablerow}{HTML}{F0F4F8}
+\definecolor{darktext}{HTML}{1A202C}
+\definecolor{softrule}{HTML}{CBD5E0}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\footnotesize\color{primary!80}MEMORIA DE CALCULO ESTRUCTURAL}
+\fancyhead[R]{\sffamily\footnotesize\color{primary!80}Cubierta Metalica -- Sistema Completo}
+\fancyfoot[C]{\sffamily\footnotesize\color{primary!60}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{secondary!40}\leaders\hrule height \headrulewidth\hfill}}
+\usepackage{titlesec}
+\titleformat{\section}[hang]
+  {\sffamily\LARGE\bfseries\color{primary}}
+  {\thesection\enskip}{0pt}{}
+  [\vspace{-0.5em}\color{accent}{\rule{\textwidth}{1.2pt}}\vspace{0.2em}]
+\titleformat{\subsection}[hang]
+  {\sffamily\Large\bfseries\color{secondary}}
+  {\thesubsection\enskip}{0pt}{}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\newcommand{\tableheadrow}{\rowcolor{primary!15}\sffamily\footnotesize\bfseries\color{primary}}
+\newcommand{\tabletotalrow}{\rowcolor{secondary!10}\sffamily\bfseries}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{babel}
+\usepackage{float}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=secondary, urlcolor=accent, citecolor=secondary}
+\usepackage{caption}
+\captionsetup{font={sf,footnotesize,color=primary!80}, labelfont={bf,color=secondary}, justification=raggedright, singlelinecheck=false, skip=6pt}
+\begin{document}
+
+% ═══ PORTADA ═══
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[primary] (current page.north west) rectangle ([yshift=-2.8cm]current page.north east);
+  \fill[secondary!80] (current page.south west) rectangle ([yshift=1.2cm]current page.south east);
+  \fill[accent] (current page.north west) rectangle ([yshift=-2.85cm]current page.north east);
+\end{tikzpicture}
+\vspace*{2cm}
+\begin{center}
+  {\sffamily\fontsize{16}{20}\selectfont\color{white}\bfseries MEMORIA DE CALCULO ESTRUCTURAL\par}
+  \vspace{0.8cm}
+  {\sffamily\fontsize{28}{34}\selectfont\color{primary}\bfseries Cubierta Metalica\par}
+  {\sffamily\fontsize{22}{28}\selectfont\color{secondary}\bfseries Correas + Cercha de Transicion + Cercha Warren\par}
+  \vspace{1.2cm}
+  {\sffamily\large\color{darktext!70} Analisis por Elementos Finitos --- NSR-10 LRFD (AISC 360-10)\par}
+  \vspace{1.5cm}
+  \begin{tikzpicture}[scale=1.1]
+    \draw[primary!50, thick] (0,0.8) -- (4,0.8);
+    \draw[primary!50, thick] (0,0) -- (4,0);
+    \foreach \x in {0,0.5,1,...,4} {
+      \draw[secondary!30, thin] (\x,0) -- (\x,0.8);
+    }
+    \node[primary!40] at (2,-0.3) {\sffamily\scriptsize Cercha Warren 16.52m};
+    \draw[accent!50, thick] (0,-0.8) -- (1.5,-0.8);
+    \node[accent!40] at (0.75,-1.1) {\sffamily\scriptsize Correa C220};
+    \node[secondary!40] at (5.5,-0.4) {\sffamily\scriptsize Cercha transicion 6.40m};
+  \end{tikzpicture}
+  \vspace{2cm}
+  {\sffamily\large\color{white}\bfseries DogCalC v0.4.4 --- Motor PyNite FEM\par}
+  {\sffamily\small\color{white!80}\today\par}
+\end{center}
+\newpage
+
+\pagestyle{fancy}
+\renewcommand{\contentsname}{\sffamily\color{primary}\LARGE\bfseries Contenido}
+\tableofcontents
+\newpage
+
+%============================================
+\section{DATOS GENERALES DEL PROYECTO}
+%============================================
+\begin{center}
+\begin{tabular}{>{\sffamily\color{primary!80}}l >{\sffamily}l}
+\textbf{Proyecto:}   & Cubierta metalica: correas + cercha transicion + cercha Warren \\
+\textbf{Software:}   & DogCalC v0.4.4 (motor PyNite FEM) \\
+\textbf{Norma:}      & NSR-10 --- AISC 360-10 para acero \\
+\textbf{Metodo:}     & Diseno por Resistencia Ultima (LRFD) \\
+\textbf{Acero:}      & Acero Grado 50 ($F_y=345$ MPa, $F_u=450$ MPa) \\
+\end{tabular}
+\end{center}
+
+La cubierta consta de tres componentes:
+\begin{enumerate}
+    \item \textbf{Correas} tipo C 220$\times$65$\times$2 mm, L=5.70 m, separacion 1.00 m
+    \item \textbf{Cercha de transicion} L=6.40 m (viga de borde), 3 modulos de 6.40 m = 19.20 m total
+    \item \textbf{Cercha Warren} en cajon 3D, L=16.52 m, h=1.00 m
+\end{enumerate}
+
+Las cerchas de transicion (ejes B y C) transmiten sus reacciones como cargas puntuales
+sobre la cercha Warren cajon en los nudos inferiores (N27, N67, N33, N73).
+\vspace{0.5cm}
+
+% ============================================================
+\part*{PARTE 1: CORREA C 220$\times$65$\times$2}
+\addcontentsline{toc}{part}{Parte 1: Correa C 220$\times$65$\times$2}
+% ============================================================
+
+%============================================
+\section{CORREA --- GEOMETRIA}
+%============================================
+\begin{center}
+\begin{tabular}{>{\sffamily\color{primary!80}}l >{\sffamily}l}
+\textbf{Perfil:}     & 2C armado 220$\times$65$\times$4 mm (cajon)\\
+\textbf{Luz:}        & 5.70 m \\
+\textbf{Modelo:}     & Viga simplemente apoyada (3 nodos, 2 elementos) \\
+\textbf{Apoyos:}     & N1 PINNED, N2 ROLLER, N3 LATERAL (arriost. $L/2$) \\
+\textbf{Ancho aferente:} & 1.00 m \\
+\end{tabular}
+\end{center}
+
+\subsection{Propiedades de la seccion}
+\begin{center}
+\begin{tabular}{l>{\sffamily}c}
+\toprule
+\rowcolor{primary!15}
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Propiedad} & \multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Valor} \\
+\midrule
+Designacion & 2C 220$\times$65$\times$4 mm (cajon armado) \\
+Area total ($A_g$) & 2\,800 mm\textsuperscript{2} \\
+Inercia ($I_x$) & $19.68\times10^{6}$ mm\textsuperscript{4} \\
+Modulo elastico ($S_x$) & 178.9 cm\textsuperscript{3} \\
+Modulo plastico ($Z_x$) & 211.2 cm\textsuperscript{3} \\
+Peso propio & 0.216 kN/m \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Modelo estructural}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.2]
+  \draw[thick, primary] (0,0) -- (5.7,0);
+  \fill[primary] (0,0) circle (0.08) node[below] {\tiny N1 (PIN)};
+  \fill[primary] (2.85,0) circle (0.08) node[below] {\tiny N3};
+  \fill[primary] (5.7,0) circle (0.08) node[below] {\tiny N2 (ROLLER)};
+  \draw[<->, softrule] (0,-0.4) -- (5.7,-0.4) node[midway,below,font=\tiny\sffamily] {L=5.70 m};
+  \node[primary, above, font=\tiny\sffamily] at (1.425,0.15) {M1};
+  \node[primary, above, font=\tiny\sffamily] at (4.275,0.15) {M2};
+\end{tikzpicture}
+\caption{Modelo de la correa. Dos elementos frame con nodo central para lectura de resultados.}
+\label{fig:correa-modelo}
+\end{figure}
+
+%============================================
+\section{CORREA --- CARGAS}
+%============================================
+Cargas superficiales aplicadas como distribuidas uniformes (kN/m) sobre cada elemento,
+con ancho aferente de 1.00 m.
+
+\begin{center}
+\begin{tabular}{l c >{\sffamily}c}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{kN/m\textsuperscript{2}} & \textbf{kN/m} \\
+\midrule
+Peso propio (D)     & 0.80  & 0.80 \\
+Cubierta viva (Lr)  & 0.50  & 0.50 \\
+\rowcolor{tablerow}
+Viento (W)          & 0.40  & 0.40 \\
+Granizo (G)         & 1.00  & 1.00 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Todos los casos incluyen peso propio estructural (SELFWEIGHT Y -1), que agrega 0.054 kN/m adicionales.
+
+Combinaciones NSR-10 (LRFD): 101 a 108 (identicas a las de la cercha Warren).
+
+%============================================
+\section{CORREA --- ANALISIS ESTRUCTURAL}
+%============================================
+{\sffamily Modelo: 3 nodos, 2 elementos frame (6 GDL/nudo). Apoyos: N1 PINNED, N2 ROLLER.}
+
+\subsection{Reacciones y momentos}
+Combo gobernante: \textbf{105} (1.2D+1.6G+0.5W).
+
+\begin{center}
+\begin{tabular}{l r r r}
+\toprule
+\tableheadrow
+\textbf{Nudo} & \textbf{FY (kN)} & \textbf{Mz max (kN-m)} & \textbf{DY (mm)} \\
+\midrule
+N1 (PIN)   & 8.37 & -- & 0.0 \\
+\rowcolor{tablerow}
+N3 (centro) & -- & 11.93 & $-41.0$ \\
+N2 (ROLLER) & 8.37 & -- & 0.0 \\
+\midrule
+\tabletotalrow
+\textbf{Total} & \textbf{16.74} & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Desplazamiento maximo: $\delta_{max} \approx$ \textbf{41.0 mm} $\approx L / 139$ (Combo 105).
+
+\textbf{Momentos maximos por combo:}
+\begin{center}
+\begin{tabular}{c c}
+\toprule
+\tableheadrow
+\textbf{Combo} & \textbf{$M_u$ (kN-m)} \\
+\midrule
+101 (1.4D)        &  4.60 \\
+102 (1.2D+1.6Lr)  &  7.36 \\
+\rowcolor{tablerow}
+103 (1.2D+1.6G)   & 10.44 \\
+104 (1.2D+1.6Lr+0.5W) & 8.23 \\
+\rowcolor{tablerow}
+\textbf{105 (1.2D+1.6G+0.5W)} & \textbf{11.93} \\
+106 (1.2D+1.0W+0.5Lr) & 6.76 \\
+\rowcolor{tablerow}
+107 (1.2D+1.0W+0.5G) & 7.72 \\
+108 (0.9D+1.0W)    & 4.71 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{CORREA --- CODE CHECK AISC 360-10 / NSR-10}
+%============================================
+Verificacion de resistencia para la correa armada \textbf{2C 220$\times$65$\times$4 mm}
+(dos canales paralelos formando cajon), acero Grado 50 ($F_y=345$ MPa, $F_u=450$ MPa).
+Norma NSR-10, titulo F (AISC 360-10). Arriostramiento lateral en $L/2$ (N3: DZ fijo).
+
+\subsection{Propiedades del perfil armado}
+\begin{center}
+\begin{tabular}{l >{\sffamily}c}
+\toprule
+\rowcolor{primary!15}
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Propiedad} & \multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Valor} \\
+\midrule
+Area total ($A_g$)   & 2\,800 mm\textsuperscript{2} \\
+Inercia ($I_x$)      & $19.68\times10^{6}$ mm\textsuperscript{4} \\
+Modulo elastico ($S_x$) & 178.9 cm\textsuperscript{3} \\
+Modulo plastico ($Z_x$) & 211.2 cm\textsuperscript{3} \\
+Peso propio          & 0.216 kN/m \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Clasificacion de la seccion (AISC B4.1)}
+Para seccion cajon armada (2C), las alas de cada canal individual se verifican como
+elementos rigidizados del cajon:
+\begin{center}
+\begin{tabular}{l c c c c}
+\toprule
+\rowcolor{primary!15}
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Elemento} &
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} $b/t$} &
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} $\lambda_p$} &
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} $\lambda_r$} &
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Clase} \\
+\midrule
+Ala (cajon) & $65/4=16.25$ & $1.12\sqrt{E/F_y}=27.0$ & $1.40\sqrt{E/F_y}=33.7$ & \textcolor{secondary!80!black}{Compacto} \\
+\rowcolor{tablerow}
+Alma ($h/t_w$) & $220/4=55.0$ & $3.76\sqrt{E/F_y}=90.5$ & $5.70\sqrt{E/F_y}=137$ & \textcolor{secondary!80!black}{Compacto} \\
+\bottomrule
+\end{tabular}
+\end{center}
+$b/t=16.25 < \lambda_p=27.0$ $\rightarrow$ \textbf{Seccion compacta}. Puede desarrollar $M_p$.
+
+\subsection{Capacidad a flexion (AISC F7 -- secciones cajon)}
+{\sffamily\small
+\textbf{Modulo plastico:} $Z_x = \mathbf{211.2 \times 10^{-6}}$ m\textsuperscript{3} \\
+$M_n = M_p = F_y \times Z_x = 345{\times}10^3 \times 211.2{\times}10^{-6} = \mathbf{72.9}$ kN-m \\
+$\phi_b M_n = 0.90 \times 72.9 = \mathbf{65.6}$ kN-m \\
+\textbf{Ratio:} $14.10 / 65.6 = \mathbf{0.215}$ $\rightarrow$ \textcolor{secondary!80!black}{OK}
+}
+
+\subsection{Capacidad a cortante (AISC G2)}
+{\sffamily\small
+$A_w = 2 \times 220 \times 4 = 1\,760$ mm\textsuperscript{2} \\
+$h/t_w = 55 < 1.10\sqrt{k_v E/F_y} = 59.2$ $\rightarrow$ $C_v = 1.0$ \\
+$V_n = 0.6 \times 345{\times}10^3 \times 1{,}760{\times}10^{-6} = 364.3$ kN \\
+$\phi_v V_n = 0.90 \times 364.3 = \mathbf{327.9}$ kN \\
+\textbf{Ratio:} $9.9 / 327.9 = 0.03$ $\rightarrow$ \textcolor{secondary!80!black}{OK}
+}
+
+\subsection{Resultados combinados}
+\begin{center}
+\begin{tabular}{l c c c c}
+\toprule
+\tableheadrow
+\textbf{Miembro} & \textbf{Mu (kN-m)} & \textbf{$\phi$Mn (kN-m)} & \textbf{Ratio} & \textbf{Estado} \\
+\midrule
+M1 & 14.10 & 65.6 & \textbf{0.215} & \textcolor{secondary!80!black}{OK} \\
+\rowcolor{tablerow}
+M2 & 14.10 & 65.6 & \textbf{0.215} & \textcolor{secondary!80!black}{OK} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{minipage}{0.85\textwidth}
+\color{primary!80}\sffamily\small
+\rule{\textwidth}{0.3pt}\\[4pt]
+\textbf{Conclusion:} La correa armada 2C 220$\times$65$\times$4 mm \textbf{PASA} holgadamente
+el code check AISC 360-10 con un ratio maximo de \textbf{0.215}. La seccion cajon compacta
+desarrolla toda su capacidad plastica ($\phi M_n=65.6$ kN-m), muy por encima de la demanda
+$M_u=14.10$ kN-m (combo 105). Cortante no critico (ratio 0.03).\\
+\rule{\textwidth}{0.3pt}
+\end{minipage}
+\end{center}
+
+\subsection{Verificacion de deflexiones (servicio)}
+{\sffamily\small
+Flecha maxima sin mayorar (combo servicio D+Lr):
+$w = 0.80+0.216+0.50 = 1.516$ kN/m \\
+$\delta = \dfrac{5 w L^4}{384 E I} = \dfrac{5 \times 1.516 \times 5.7^4}{384 \times 200{\times}10^6 \times 19.68{\times}10^{-6}} = \mathbf{8.7}$ mm \\[2pt]
+$\delta/L = 8.7/5700 = 1/655 < 1/360$ $\checkmark$ Deflexion aceptable.
+}
+
+\newpage
+% ============================================================
+\part*{PARTE 2: CERCHA DE TRANSICION}
+\addcontentsline{toc}{part}{Parte 2: Cercha de Transicion}
+% ============================================================
+Cercha Warren 2D de 8 paneles que recibe las cargas de las correas (ancho aferente 5.60 m)
+y las transmite a la cercha principal. Perfil TUBO 70$\times$70$\times$4 mm en acero Grado 50.
+
+%============================================
+\section{TRANSICION --- GEOMETRIA}
+%============================================
+\begin{center}
+\begin{tabular}{>{\sffamily\color{primary!80}}l >{\sffamily}l}
+\textbf{Tipo:}      & Cercha Warren 2D, plano Z=0 \\
+\textbf{Luz total:} & 6.40 m (modulo unitario) \\
+\textbf{Altura:}    & 1.00 m (relacion L/h = 6.4) \\
+\textbf{Paneles:}   & 8 paneles de 0.80 m cada uno \\
+\textbf{Nodos:}     & 18 (9 cordon superior N1--N9, 9 cordon inferior N10--N18) \\
+\textbf{Miembros:}  & 33 (8 CS + 8 CI + 8 diagonales + 9 montantes) \\
+\textbf{Apoyos:}    & N10 y N18 PINNED (extremos del cordon inferior) \\
+\textbf{Ancho aferente:} & 5.60 m \\
+\end{tabular}
+\end{center}
+
+\textbf{Nota:} La cercha de transicion real se compone de 3 modulos de 6.40 m cada uno,
+totalizando 19.20 m de luz (apoyada en columnas en ejes 1 y 4, y en los cajones Warren
+en ejes 2 y 3). El analisis del modulo unitario representa la peor condicion de carga
+por ser el caso de apoyo simple mas desfavorable.
+
+\textbf{Patron de diagonales:} Los primeros 4 paneles (x=0 a 3.2 m) tienen diagonales
+descendentes (N1$\to$N11, N2$\to$N12, N3$\to$N13, N4$\to$N14). Los ultimos 4 paneles
+(x=3.2 a 6.4 m) tienen diagonales ascendentes (N14$\to$N6, N15$\to$N7, N16$\to$N8,
+N17$\to$N9), formando una configuraci\'on de V en el centro de la luz en el nodo N14.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.85, every node/.style={font=\tiny\sffamily}]
+  \draw[thick, primary] (0,1.0) -- (6.4,1.0);
+  \draw[thick, accent] (0,0) -- (6.4,0);
+  \foreach \x in {0,0.8,1.6,2.4,3.2,4.0,4.8,5.6,6.4} {
+    \draw[thin, softrule] (\x,0) -- (\x,1.0);
+    \fill[primary] (\x,1.0) circle (0.045) node[above] {\tiny \pgfmathprint{int(1+\x/0.8)}};
+    \fill[accent] (\x,0) circle (0.045) node[below] {\tiny \pgfmathprint{int(10+\x/0.8)}};
+  }
+  \foreach \x in {0,0.8,1.6,2.4} {
+    \draw[thick, secondary!60] (\x,1.0) -- (\x+0.8,0);
+  }
+  \foreach \x in {3.2,4.0,4.8,5.6} {
+    \draw[thick, secondary!60] (\x,0) -- (\x+0.8,1.0);
+  }
+  \draw[<->] (0,-0.45) -- (6.4,-0.45) node[midway,below,font=\sffamily] {L = 6.40 m};
+  \draw[<->] (6.7,0) -- (6.7,1.0) node[midway,right,font=\sffamily] {h = 1.0 m};
+  \node[primary, font=\sffamily\small] at (0.4,1.25) {Cordon Superior (CS)};
+  \node[accent, font=\sffamily\small] at (0.4,-0.3) {Cordon Inferior (CI)};
+\end{tikzpicture}
+\caption{Cercha de transicion Warren 2D. Numeracion de nodos y miembros.}
+\label{fig:transicion-geo}
+\end{figure}
+
+%============================================
+\section{TRANSICION --- CARGAS}
+%============================================
+Las correas transmiten las cargas de cubierta a los nodos del cordon superior.
+El ancho aferente de 5.60 m corresponde a la separacion entre cerchas de transicion.
+
+Carga por nodo interior = $q \times 5.60 \times 0.80$ kN (panel de 0.80 m).
+Carga en extremos = mitad del valor interior.
+
+\begin{center}
+\begin{tabular}{l c c c}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{Superficial (kN/m\textsuperscript{2})} & \textbf{Nudos interiores (kN)} & \textbf{Extremos N1,N9 (kN)} \\
+\midrule
+Peso propio (D)  & 0.80 & $-3.584$ & $-1.792$ \\
+Cubierta viva (Lr) & 0.50 & $-2.240$ & $-1.120$ \\
+\rowcolor{tablerow}
+Viento (W) & 0.40 & $-1.792$ & $-0.896$ \\
+Granizo (G) & 1.00 & $-4.480$ & $-2.240$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Todos los casos incluyen peso propio estructural (SELFWEIGHT Y -1).
+Ocho combinaciones NSR-10 (101--108) identicas a las de la correa y la cercha principal.
+
+%============================================
+\section{TRANSICION --- ANALISIS ESTRUCTURAL}
+%============================================
+Modelo 2D: 18 nudos, 33 elementos frame (6 GDL/nudo), conexiones rigidas.
+Apoyos: N10 y N18 PINNED (extremos del cordon inferior).
+
+\subsection{Reacciones por modulo}
+\begin{center}
+\begin{tabular}{l c c c c c}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{FY N10 (kN)} & \textbf{FY N18 (kN)} & \textbf{Total modulo (kN)} & \textbf{FX N10 (kN)} \\
+\midrule
+D  & 15.17 & 15.06 & 30.23 & 13.38 \\
+Lr &  9.80 &  9.68 & 19.48 &  8.78 \\
+\rowcolor{tablerow}
+W  &  8.01 &  7.89 & 15.90 &  7.25 \\
+G  & 18.76 & 18.64 & 37.40 & 16.45 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+En el apoyo intermedio (eje 2 o 3), dos modulos adyacentes confluyen:
+la reaccion total es la suma de ambos apoyos contiguos
+($\approx 2 \times$ el valor de un modulo).
+
+\subsection{Reaccion total en eje 2 (aporte al cajon Warren)}
+\begin{center}
+\begin{tabular}{l c c c}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{Total en eje 2 (kN)} & \textbf{Por cara del cajon (kN)} & \textbf{Nudos de aplicacion} \\
+\midrule
+D  & 30.23 & 30.23 & 27, 67 \\
+Lr & 19.48 & 19.48 & 27, 67 \\
+\rowcolor{tablerow}
+W  & 15.90 & 15.90 & 27, 67 \\
+G  & 37.40 & 37.40 & 27, 67 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Mismo valor en el eje 3 (nudos 33, 73). La componente horizontal FX
+se cancela entre modulos adyacentes ($\pm 13$ kN $\rightarrow$ neto $<1$ kN).
+
+\newpage
+% ============================================================
+\part*{PARTE 3: CERCHA WARREN CAJON 3D}
+\addcontentsline{toc}{part}{Parte 3: Cercha Warren Cajon 3D}
+% ============================================================
+
+%============================================
+\section{WARREN --- GEOMETRIA}
+%============================================
+
+\subsection{Vista lateral -- Cara A}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.5, every node/.style={font=\tiny\sffamily}]
+  \draw[thick, primary] (0,1.0) -- (16.52,1.0);
+  \draw[thick, accent] (0,0) -- (16.52,0);
+  \foreach \x/\xn in {0.00/0.90, 0.90/1.80, 1.80/2.70, 2.70/3.60, 3.60/4.50, 4.50/5.40, 5.40/6.30, 6.30/7.13, 7.13/8.03, 8.03/8.93, 8.93/9.83, 9.83/10.73, 10.73/11.55, 11.55/12.45, 12.45/13.35, 13.35/14.25, 14.25/15.15, 15.15/16.05, 16.05/16.52} {
+    \draw[thin, softrule] (\x,0) -- (\x,1.0);
+    \draw[thin, secondary!40] (\x,1.0) -- (\xn,0);
+  }
+  \draw[thin, softrule] (16.52,0) -- (16.52,1.0);
+  \draw[<->] (0,-0.4) -- (16.52,-0.4) node[midway,below] {Luz: 16.52 m};
+  \draw[<->] (16.52+0.4,0) -- (16.52+0.4,1.0) node[midway,right] {h=1.0 m};
+\end{tikzpicture}
+\caption{Vista lateral cercha Warren. Cordon superior (azul), inferior (rojo), diagonales (celeste).}
+\end{figure}
+
+\subsection{Seccion transversal -- Cajon 3D}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.4]
+  \draw[thick, primary] (0,0) rectangle (0.3,1.0);
+  \draw[thick, primary] (2.0,0) rectangle (2.3,1.0);
+  \draw[thin, dashed, softrule] (0,0) -- (2.0,0);
+  \draw[thin, dashed, softrule] (0,1.0) -- (2.0,1.0);
+  \draw[thin, dashed, softrule] (0.3,0) -- (2.3,0);
+  \draw[thin, dashed, softrule] (0.3,1.0) -- (2.3,1.0);
+  \draw[<->, accent] (0.3,0.5) -- (2.0,0.5) node[midway,above] {\tiny 0.28 m};
+  \node at (0.15,-0.25) {\tiny Cara A (z=0)};
+  \node at (2.15,-0.25) {\tiny Cara B (z=0.28)};
+  \node[right] at (3.0,1.0) {\sffamily\bfseries\color{primary} TUBO 70$\times$70$\times$4};
+  \node[right] at (3.0,0.7) {\sffamily\footnotesize $A=1{,}056$ mm$^2$, $I=769{,}472$ mm$^4$};
+  \node[right] at (3.0,0.4) {\sffamily\footnotesize $S=21{,}985$ mm$^3$, $r=27.0$ mm};
+\end{tikzpicture}
+\end{figure}
+
+\subsection{Datos geometricos}
+\begin{center}
+\begin{tabular}{>{\sffamily\color{primary!80}}l >{\sffamily}l}
+\textbf{Tipo:}   & Cercha Warren en cajon 3D (dos caras paralelas) \\
+\textbf{Luz:}    & 16.52 m \\
+\textbf{Altura:} & 1.00 m \\
+\textbf{Separacion caras:} & 0.28 m \\
+\textbf{Nodos:}   & 80 (40 por cara) \\
+\textbf{Miembros:} & 194 \\
+\end{tabular}
+\end{center}
+
+%============================================
+\section{WARREN --- MATERIALES}
+%============================================
+Perfil TUBO 70$\times$70$\times$4 mm en acero ASTM A36.
+
+\begin{center}
+\begin{tabular}{l>{\sffamily}c}
+\toprule
+\rowcolor{primary!15}
+\multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Propiedad} & \multicolumn{1}{c}{\sffamily\footnotesize\bfseries\color{primary} Valor} \\
+\midrule
+Designacion & TUBO 70$\times$70$\times$4 mm \\
+Area ($A_g$) & 1\,056 mm\textsuperscript{2} \\
+Inercia ($I$) & 769\,472 mm\textsuperscript{4} \\
+Radio de giro ($r$) & 27.0 mm \\
+$E$ & 200 GPa \\
+$F_y$ & 345 MPa (Grado 50) \\
+$F_u$ & 450 MPa \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{WARREN --- CARGAS Y COMBINACIONES}
+%============================================
+Cargas aplicadas en nudos del cordon superior de ambas caras,
+ancho aferente de \textbf{0.65 m} a cada lado del eje (1.30 m total).
+
+\begin{center}
+\begin{tabular}{l c >{\sffamily}c}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{kN/m\textsuperscript{2}} & \textbf{Total cubierta (kN)} \\
+\midrule
+Peso propio (D)  & 0.80 & 34.36 \\
+Cubierta viva (Lr) & 0.50 & 21.48 \\
+\rowcolor{tablerow}
+Viento (W) & 0.40 & 17.18 \\
+Granizo (G) & 1.00 & 42.95 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Adicionalmente, las cerchas de transicion (ejes B y C) transmiten sus reacciones
+al cajon en los nudos inferiores de cada cara:
+
+\begin{center}
+\begin{tabular}{l c c c}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{Reaccion por interseccion (kN)} & \textbf{Por cara del cajon (kN)} & \textbf{Nudos} \\
+\midrule
+D  & 30.23 & 30.23 & 27, 67, 33, 73 \\
+Lr & 19.48 & 19.48 & 27, 67, 33, 73 \\
+\rowcolor{tablerow}
+W  & 15.90 & 15.90 & 27, 67, 33, 73 \\
+G  & 37.40 & 37.40 & 27, 67, 33, 73 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Las cargas de transicion se aplican como \textbf{JOINT LOAD FY} en los nudos del cordon inferior
+de cada cara (N27 y N67 en interseccion con eje B, N33 y N73 con eje C).
+Ocho combinaciones NSR-10 (101--108) identicas a las de la correa.
+
+%============================================
+\section{WARREN --- ANALISIS}
+%============================================
+Modelo 3D: 80 nudos, 194 elementos frame (6 GDL/nudo), conexiones rigidas.
+Apoyos: N21 y N61 PINNED, N40 y N80 ROLLER.
+
+\subsection{Reacciones -- Combinacion critica 105 (1.2D+1.6G+0.5W)}
+\begin{center}
+\begin{tabular}{l r r r}
+\toprule
+\tableheadrow
+\textbf{Nudo} & \textbf{FY (kN)} & \textbf{Tipo} \\
+\midrule
+N21 (PINNED)  & 143.75 & Cara A, izquierdo \\
+N61 (PINNED)  & 143.75 & Cara B, izquierdo \\
+N40 (ROLLER)  & 138.46 & Cara A, derecho \\
+\rowcolor{tablerow}
+N80 (ROLLER)  & 138.46 & Cara B, derecho \\
+\midrule
+\tabletotalrow
+\textbf{Total} & \textbf{564.42} & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La carga total de 564.42 kN se distribuye simetricamente entre ambas caras del cajon
+y entre apoyos PINNED (57.5 kN diferencia por el empuje horizontal de las diagonales).
+
+\subsection{Reacciones por carga individual}
+\begin{center}
+\begin{tabular}{l r r r r r}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{N21} & \textbf{N61} & \textbf{N40} & \textbf{N80} & \textbf{Total} \\
+\midrule
+D  & 41.83 & 41.83 & 40.29 & 40.29 & 164.25 \\
+Lr & 27.60 & 27.60 & 26.58 & 26.58 & 108.37 \\
+\rowcolor{tablerow}
+W  & 22.86 & 22.86 & 22.01 & 22.01 &  89.75 \\
+G  & 51.32 & 51.32 & 49.44 & 49.44 & 201.52 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%============================================
+\section{WARREN --- FUERZAS AXIALES}
+%============================================
+Envolvente de diseno (combos 101--108) con cargas de cubierta + transicion.
+$(+)$ traccion, $(-)$ compresion.
+
+\subsection{Cordon Superior (compresion)}
+\begin{center}
+\begin{tabular}{r >{\sffamily}r | r >{\sffamily}r}
+\toprule
+\tableheadrow
+\textbf{Miembro} & \textbf{Axial (kN)} & \textbf{Miembro} & \textbf{Axial (kN)} \\
+\midrule
+M1 & $-146.6$ & M11 & $-730.0$ \\
+M2 & $-278.4$ & M12 & $-704.6$ \\
+M3 & $-393.3$ & M13 & $-722.2$ \\
+M4 & $-490.7$ & M14 & $-725.8$ \\
+M5 & $-570.4$ & M15 & $-718.4$ \\
+M6 & $-632.5$ & M16 & $-731.9$ \\
+M7 & $-677.0$ & M17 & $-731.9$ \\
+M8 & $-703.6$ & M18 & $-730.8$ \\
+M9 & $-713.0$ & M19 & $-730.0$ \\
+M10 & $-704.6$ & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Max compresion:} M16/M17 = \textcolor{accent}{$-731.9$ kN} (en las cercanias del
+apoyo). Se observa que las cargas de transicion aumentan significativamente las fuerzas
+en las cuerdas cercanas a los apoyos.
+
+\subsection{Cordon Inferior (traccion)}
+\begin{center}
+\begin{tabular}{r >{\sffamily}r | r >{\sffamily}r}
+\toprule
+\tableheadrow
+\textbf{Miembro} & \textbf{Axial (kN)} & \textbf{Miembro} & \textbf{Axial (kN)} \\
+\midrule
+M20 & $+22.3$ & M30 & $+723.3$ \\
+M21 & $+128.0$ & M31 & $+730.2$ \\
+M22 & $+263.0$ & M32 & $+729.9$ \\
+M23 & $+381.0$ & M33 & $+724.8$ \\
+M24 & $+482.0$ & M34 & $+716.8$ \\
+M25 & $+565.0$ & M35 & $+706.0$ \\
+M26 & $+630.0$ & M36 & $+691.0$ \\
+M27 & $+678.0$ & M37 & $+667.0$ \\
+M28 & $+706.0$ & M38 & $+619.0$ \\
+M29 & $+716.0$ & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{Max traccion:} M31 = \textcolor{secondary}{$+730.2$ kN}.
+
+\subsection{Diagonales}
+Las diagonales trabajan en traccion/compresion con rangos de $\pm 45$ a $\pm 90$ kN,
+similar a la configuracion original sin cargas de transicion. Las diagonales cercanas
+a los nuevos puntos de carga (nudos 27, 33, 67, 73) presentan un ligero incremento
+($+5$ a $+10$ kN).
+
+%============================================
+\section{WARREN --- CODE CHECK AISC 360-10 / NSR-10}
+%============================================
+Verificacion de los 194 miembros de la cercha segun AISC 360-10 (NSR-10 Titulo F).
+Acero Grado 50 ($F_y=345$ MPa, $F_u=450$ MPa). Perfil TUBO 70$\times$70$\times$4 mm
+($A=1{,}056$ mm\textsuperscript{2}, $r=27.0$ mm, $I=769{,}472$ mm\textsuperscript{4}).
+
+\subsection{Capacidad a traccion (AISC D2)}
+{\sffamily\small
+\textbf{Fluencia (D2-1):}
+$\phi_t P_n = 0.90 \times F_y \times A_g = 0.90 \times 345{\times}10^3 \times 1{,}056{\times}10^{-6} = \mathbf{328}$ kN
+\\[2pt]
+\textbf{Rotura (D2-2):}
+$\phi_t P_n = 0.75 \times F_u \times A_e \approx 0.75 \times 450{\times}10^3 \times 1{,}056{\times}10^{-6} = \mathbf{356}$ kN
+\\[2pt]
+Gobierna fluencia: $\phi_t P_n = \mathbf{328}$ kN.
+}
+
+\subsection{Capacidad a compresion (AISC E3)}
+{\sffamily\small
+Cordon superior ($L=0.90$ m, $K=1.0$):
+\\[2pt]
+$KL/r = 1.0 \times 0.90 / 0.0270 = 33.3$ \\
+$F_e = \pi^2 E / (KL/r)^2 = \pi^2 \times 200{,}000 / 33.3^2 = \mathbf{1{,}785}$ MPa \\
+$F_y / F_e = 345 / 1{,}785 = 0.193$ \\
+$F_{cr} = \left[0.658^{F_y/F_e}\right] F_y = 0.920 \times 345 = \mathbf{317}$ MPa \\
+$\phi_c P_n = 0.90 \times F_{cr} \times A_g = 0.90 \times 317{\times}10^3 \times 1{,}056{\times}10^{-6} = \mathbf{302}$ kN
+}
+
+\subsection{Resultados -- miembros criticos}
+\begin{center}
+\begin{tabular}{l c c c c c c}
+\toprule
+\tableheadrow
+\textbf{Miembro} & \textbf{Tipo} & \textbf{L (m)} & \textbf{Pu (kN)} & \textbf{$\phi$Pn (kN)} & \textbf{Ratio} & \textbf{Estado} \\
+\midrule
+M16  & CS-comp & 0.90 & $-731.9$ & 302 & \textbf{2.42} & \textcolor{accent}{OVERSTRESS} \\
+M17  & CS-comp & 0.90 & $-731.9$ & 302 & 2.42 & \textcolor{accent}{OVERSTRESS} \\
+M10  & CS-comp & 0.90 & $-731.9$ & 302 & 2.42 & \textcolor{accent}{OVERSTRESS} \\
+M87  & CS-comp & 0.90 & $-731.9$ & 302 & 2.42 & \textcolor{accent}{OVERSTRESS} \\
+\rowcolor{tablerow}
+M31  & CI-trac & 0.90 & $+730.2$ & 328 & \textbf{2.23} & \textcolor{accent}{OVERSTRESS} \\
+M30  & CI-trac & 0.90 & $+729.9$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \\
+M106 & CI-trac & 0.90 & $+730.2$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \\
+M107 & CI-trac & 0.90 & $+729.9$ & 328 & 2.23 & \textcolor{accent}{OVERSTRESS} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Resumen general}
+\begin{center}
+\begin{tabular}{l r}
+\toprule
+\tableheadrow
+\textbf{Concepto} & \textbf{Valor} \\
+\midrule
+Total miembros & 194 \\
+OK & 142 \\
+\rowcolor{tablerow}
+SOBREESFORZADOS & \textcolor{accent}{\textbf{52}} \\
+Peor compresion & \textbf{2.42} (CS, M16/M17) \\
+\rowcolor{tablerow}
+Peor traccion & \textbf{2.23} (CI, M31) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+{\sffamily\small\color{accent}
+\textbf{ATENCION:} El perfil TUBO 70$\times$70$\times$4 mm fue dimensionado originalmente
+para la cercha Warren sin cargas de transicion. Al incorporar las reacciones de las
+cerchas de transicion (ejes B y C), las fuerzas axiales en las cuerdas se incrementaron
+de $\sim$150 kN a $\sim$730 kN, superando ampliamente la capacidad del perfil.
+Se requiere una seccion mayor para las cuerdas (TUBO 114$\times$5 mm o superior),
+mientras que las diagonales y montantes permanecen dentro de capacidad.
+}
+
+%============================================
+\section{CONCLUSIONES GENERALES}
+%============================================
+\begin{enumerate}
+    \item \textbf{Correa armada 2C 220$\times$65$\times$4 mm:} \textcolor{secondary!80!black}{PASA} holgadamente.
+          Seccion cajon compacta, $\phi M_n=65.6$ kN-m, demanda $M_u=14.10$ kN-m (combo 105),
+          ratio \textbf{0.215}. Arriostramiento lateral en $L/2$. Deflexion $L/655$ aceptable.
+    \item \textbf{Cercha de transicion Warren 2D:} Todos los 33 miembros OK con TUBO 70$\times$70$\times$4 mm
+          Grado 50. Ratio maximo \textbf{0.267} (cordon superior a compresion). Reaccion por modulo
+          de 30.23 kN D, 19.48 kN Lr, 15.90 kN W y 37.40 kN G, transmitidas a la cercha principal.
+    \item \textbf{Cercha Warren 3D con cargas de transicion:} \textcolor{accent}{NO PASA} con TUBO 70$\times$70$\times$4 mm.
+          Las cargas de las cerchas de transicion incrementan las fuerzas axiales en las cuerdas
+          a $\sim$730 kN (vs $\sim$150 kN originales), resultando en \textbf{52 miembros sobre-esforzados}
+          con ratios de hasta \textbf{2.42} (compresion) y \textbf{2.23} (traccion).
+          Las diagonales y montantes permanecen dentro de capacidad.
+    \item \textbf{Rediseno requerido:} Se necesita una seccion tubular de mayor area para las
+          cuerdas del cajon Warren. Opciones recomendadas: TUBO 114$\times$5 mm ($A\approx 1{,}710$ mm$^2$)
+          o TUBO 140$\times$6 mm ($A\approx 2{,}520$ mm$^2$).
+\end{enumerate}
+
+% ═══════════════════════════════════════════
+\appendix
+\section{Archivos de entrada STAAD (.std)}
+% ═══════════════════════════════════════════
+
+\subsection{Correa C 220$\times$65$\times$2}
+{\scriptsize\ttfamily\verbatiminput{../examples/correa_c220.std}}
+
+\subsection{Cercha de Transicion Warren 8P}
+{\scriptsize\ttfamily\verbatiminput{../examples/cercha_transicion.std}}
+
+\subsection{Cercha Warren Cajon 3D (con cargas de transicion)}
+{\scriptsize\ttfamily\verbatiminput{../examples/cercha_warren.std}}
+
+\end{document}

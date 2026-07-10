@@ -11,6 +11,7 @@ class SupportType(Enum):
     ROLLER_X = "roller_x"    # free in X direction
     ROLLER_Y = "roller_y"    # free in Y direction
     ROLLER_Z = "roller_z"    # free in Z direction
+    LATERAL = "lateral"      # DZ only (lateral brace)
 
 
 @dataclass

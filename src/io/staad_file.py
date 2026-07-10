@@ -56,6 +56,7 @@ STEEL_SECTIONS = {
     "TUBO70x4": dict(A=1056e-6, Ix=76.95e-8, Iy=76.95e-8, Iz=76.95e-8, J=153.9e-8, depth=0.070, width=0.070),
     "TUBO70X4": dict(A=1056e-6, Ix=76.95e-8, Iy=76.95e-8, Iz=76.95e-8, J=153.9e-8, depth=0.070, width=0.070),
     "C220X65X2": dict(A=700e-6, Ix=4920.75e-9, Iy=200.19e-9, Iz=200.19e-9, J=0.933e-9, depth=0.220, width=0.065),
+    "2C220X65X4": dict(A=2800e-6, Ix=19684e-9, Iy=520e-9, Iz=520e-9, J=14.93e-9, depth=0.220, width=0.130),
 }
 
 
@@ -503,6 +504,7 @@ def _map_support(stype: str) -> SupportType:
         "FIXED": SupportType.FIXED,
         "PINNED": SupportType.PINNED,
         "ROLLER": SupportType.ROLLER_X,
+        "LATERAL": SupportType.LATERAL,
     }
     return mapping.get(stype, SupportType.PINNED)
 

@@ -125,6 +125,7 @@ def _support_flags(st: SupportType) -> tuple[bool, bool, bool, bool, bool, bool]
         SupportType.ROLLER_X:  (False, True,  True,  True,  False, False),
         SupportType.ROLLER_Y:  (True,  False, True,  True,  False, False),
         SupportType.ROLLER_Z:  (True,  True,  False, True,  False, False),
+        SupportType.LATERAL:   (False, False, True,  False, False, False),
     }
     return mapping.get(st, mapping[SupportType.FREE])
 
