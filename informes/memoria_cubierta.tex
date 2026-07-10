@@ -579,24 +579,67 @@ opuestas, formando un perfil asimetrico con la mayor inercia en el plano de la c
 %============================================
 \section{WARREN --- CARGAS Y COMBINACIONES}
 %============================================
-Cargas aplicadas en nudos del cordon superior de ambas caras,
-ancho aferente de \textbf{0.65 m} a cada lado del eje (1.30 m total).
+Dos juegos de cargas fueron considerados segun la etapa del proyecto:
 
+\subsection{Combo 1: Cargas de Memorias (kg/m\textsuperscript{2})}
 \begin{center}
-\begin{tabular}{l c >{\sffamily}c}
+\begin{tabular}{l r r}
 \toprule
 \tableheadrow
-\textbf{Carga} & \textbf{kN/m\textsuperscript{2}} & \textbf{Total cubierta (kN)} \\
+\textbf{Item} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
 \midrule
-Peso propio (D)  & 0.80 & 34.36 \\
-Cubierta viva (Lr) & 0.50 & 21.48 \\
-\rowcolor{tablerow}
-Viento (W) & 0.40 & 17.18 \\
-Granizo (G) & 1.00 & 42.95 \\
+Correas (2-220x80x2mm) & 13 & 0.128 \\
+Teja sandwich & 12 & 0.118 \\
+Cieloraso & 20 & 0.196 \\
+Paneles solares & 20 & 0.196 \\
+Estructura paneles & 10 & 0.098 \\
+Otros & 5 & 0.049 \\
+\midrule
+\tabletotalrow
+\textbf{Total D} & \textbf{80} & \textbf{0.785} \\
 \bottomrule
 \end{tabular}
 \end{center}
 
+\subsection{Combo 2: Cargas de Diseno (kg/m\textsuperscript{2})}
+\begin{center}
+\begin{tabular}{l r r}
+\toprule
+\tableheadrow
+\textbf{Item} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
+\midrule
+Correas (2-220x80x2mm) & 5 & 0.049 \\
+Teja sandwich & 10 & 0.098 \\
+Cieloraso & 0 & 0.000 \\
+Paneles solares & 25 & 0.245 \\
+Estructura paneles & 12 & 0.118 \\
+Otros & 3 & 0.029 \\
+\midrule
+\tabletotalrow
+\textbf{Total D} & \textbf{55} & \textbf{0.539} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Cargas variables (comunes a ambos combos)}
+\begin{center}
+\begin{tabular}{l r r}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
+\midrule
+Cubierta viva (Lr) & 50 & 0.491 \\
+Viento (W) & 40 & 0.392 \\
+Granizo (G) & 100 & 0.981 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Para el analisis estructural se empleo el \textbf{Combo 1 (Memorias)} por ser
+mas conservador en carga muerta. Ancho aferente de \textbf{0.65 m} a cada lado
+del eje (1.30 m total), aplicado como JOINT LOAD en nudos del cordon superior.
+
+\subsection{Cargas de transicion sobre el cajon}
 Adicionalmente, las cerchas de transicion (ejes B y C) transmiten sus reacciones
 al cajon en los nudos inferiores de cada cara:
 
@@ -615,9 +658,7 @@ G  & 37.40 & 37.40 & 27, 67, 33, 73 \\
 \end{tabular}
 \end{center}
 
-Las cargas de transicion se aplican como \textbf{JOINT LOAD FY} en los nudos del cordon inferior
-de cada cara (N27 y N67 en interseccion con eje B, N33 y N73 con eje C).
-Ocho combinaciones NSR-10 (101--108) identicas a las de la correa.
+Ocho combinaciones NSR-10 (101--108).
 
 %============================================
 \section{WARREN --- ANALISIS}
