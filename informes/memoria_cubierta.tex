@@ -87,6 +87,11 @@
 \tableofcontents
 \newpage
 
+% ============================================================
+\part*{INTRODUCCIÓN}
+\addcontentsline{toc}{part}{Introducción}
+% ============================================================
+
 %============================================
 \section{DATOS GENERALES DEL PROYECTO}
 %============================================
@@ -134,6 +139,72 @@ Cajones Warren en ejes 2 y 3 (cian). Cerchas de transicion en ejes B y C (naranj
 Las intersecciones $\times$ transfieren las reacciones como cargas puntuales.}
 \label{fig:planta-ejes}
 \end{figure}
+
+\newpage
+
+%============================================
+\section{CARGAS Y COMBINACIONES}
+%============================================
+Dos juegos de cargas fueron considerados segun la etapa del proyecto:
+
+\subsection{Combo 1: Cargas de Memorias (kg/m\textsuperscript{2})}
+\begin{center}
+\begin{tabular}{l r r}
+\toprule
+\tableheadrow
+\textbf{Item} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
+\midrule
+Correas (2-220x80x2mm) & 13 & 0.128 \\
+Teja sandwich & 12 & 0.118 \\
+Cieloraso & 20 & 0.196 \\
+Paneles solares & 20 & 0.196 \\
+Estructura paneles & 10 & 0.098 \\
+Otros & 5 & 0.049 \\
+\midrule
+\tabletotalrow
+\textbf{Total D} & \textbf{80} & \textbf{0.785} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Combo 2: Cargas de Diseno (kg/m\textsuperscript{2})}
+\begin{center}
+\begin{tabular}{l r r}
+\toprule
+\tableheadrow
+\textbf{Item} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
+\midrule
+Correas (2-220x80x2mm) & 5 & 0.049 \\
+Teja sandwich & 10 & 0.098 \\
+Cieloraso & 0 & 0.000 \\
+Paneles solares & 25 & 0.245 \\
+Estructura paneles & 12 & 0.118 \\
+Otros & 3 & 0.029 \\
+\midrule
+\tabletotalrow
+\textbf{Total D} & \textbf{55} & \textbf{0.539} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Cargas variables (comunes a ambos combos)}
+\begin{center}
+\begin{tabular}{l r r}
+\toprule
+\tableheadrow
+\textbf{Carga} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
+\midrule
+Cubierta viva (Lr) & 50 & 0.491 \\
+Viento (W) & 40 & 0.392 \\
+Granizo (G) & 100 & 0.981 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Para el analisis estructural se empleo el \textbf{Combo 1 (Memorias)} por ser
+mas conservador en carga muerta. Ancho aferente de \textbf{0.65 m} a cada lado
+del eje (1.30 m total), aplicado como JOINT LOAD en nudos del cordon superior.
+Ocho combinaciones NSR-10 (101--108) en formato LRFD.
 
 \newpage
 % ============================================================
@@ -577,71 +648,11 @@ con dos angulos L 3''$\times$1/4'' (76$\times$76$\times$6.35 mm) soldados a las 
 opuestas, formando un perfil asimetrico con la mayor inercia en el plano de la cercha.
 
 %============================================
-\section{WARREN --- CARGAS Y COMBINACIONES}
+\section{WARREN --- CARGAS DE TRANSICION SOBRE EL CAJON}
 %============================================
-Dos juegos de cargas fueron considerados segun la etapa del proyecto:
-
-\subsection{Combo 1: Cargas de Memorias (kg/m\textsuperscript{2})}
-\begin{center}
-\begin{tabular}{l r r}
-\toprule
-\tableheadrow
-\textbf{Item} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
-\midrule
-Correas (2-220x80x2mm) & 13 & 0.128 \\
-Teja sandwich & 12 & 0.118 \\
-Cieloraso & 20 & 0.196 \\
-Paneles solares & 20 & 0.196 \\
-Estructura paneles & 10 & 0.098 \\
-Otros & 5 & 0.049 \\
-\midrule
-\tabletotalrow
-\textbf{Total D} & \textbf{80} & \textbf{0.785} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{Combo 2: Cargas de Diseno (kg/m\textsuperscript{2})}
-\begin{center}
-\begin{tabular}{l r r}
-\toprule
-\tableheadrow
-\textbf{Item} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
-\midrule
-Correas (2-220x80x2mm) & 5 & 0.049 \\
-Teja sandwich & 10 & 0.098 \\
-Cieloraso & 0 & 0.000 \\
-Paneles solares & 25 & 0.245 \\
-Estructura paneles & 12 & 0.118 \\
-Otros & 3 & 0.029 \\
-\midrule
-\tabletotalrow
-\textbf{Total D} & \textbf{55} & \textbf{0.539} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\subsection{Cargas variables (comunes a ambos combos)}
-\begin{center}
-\begin{tabular}{l r r}
-\toprule
-\tableheadrow
-\textbf{Carga} & \textbf{kg/m\textsuperscript{2}} & \textbf{kN/m\textsuperscript{2}} \\
-\midrule
-Cubierta viva (Lr) & 50 & 0.491 \\
-Viento (W) & 40 & 0.392 \\
-Granizo (G) & 100 & 0.981 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Para el analisis estructural se empleo el \textbf{Combo 1 (Memorias)} por ser
-mas conservador en carga muerta. Ancho aferente de \textbf{0.65 m} a cada lado
-del eje (1.30 m total), aplicado como JOINT LOAD en nudos del cordon superior.
-
-\subsection{Cargas de transicion sobre el cajon}
-Adicionalmente, las cerchas de transicion (ejes B y C) transmiten sus reacciones
-al cajon en los nudos inferiores de cada cara:
+Las cerchas de transicion (ejes B y C) transmiten sus reacciones
+al cajon en los nudos inferiores de cada cara. Cargas por interseccion
+(cada cercha aporta la suma de dos modulos adyacentes):
 
 \begin{center}
 \begin{tabular}{l c c c}
