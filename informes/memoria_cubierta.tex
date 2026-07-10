@@ -111,6 +111,31 @@ Las cerchas de transicion (ejes B y C) transmiten sus reacciones como cargas pun
 sobre la cercha Warren cajon en los nudos inferiores (N27, N67, N33, N73).
 \vspace{0.5cm}
 
+%============================================
+\section{PLANTA DE CUBIERTA — DISPOSICION DE EJES}
+%============================================
+La cubierta se organiza sobre una grilla rectangular de ejes:
+\begin{itemize}
+    \item \textbf{Ejes 1 a 4} (direccion longitudinal): 3 modulos de 6.40 m = \textbf{19.20 m total}
+    \item \textbf{Ejes A a D} (direccion transversal): 16.52 m total (cajon Warren)
+\end{itemize}
+
+Dos \textbf{cerchas de transicion} Warren 2D (ejes B y C, L=6.40 m c/u, 3 modulos = 19.20 m)
+transmiten las cargas de correas a los \textbf{cajones Warren 3D} (ejes 2 y 3, L=16.52 m).
+Las intersecciones B$\times$2, B$\times$3, C$\times$2 y C$\times$3 caen exactamente sobre
+nudos existentes de ambas cerchas, sin requerir montantes adicionales.
+No existen columnas en el area central (entre B-C y 2-3).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{planta_estructural.png}
+\caption{Planta estructural de la cubierta metalica. Ejes 1--4 (19.20 m) y A--D (16.52 m).
+Cajones Warren en ejes 2 y 3 (cian). Cerchas de transicion en ejes B y C (naranja).
+Las intersecciones $\times$ transfieren las reacciones como cargas puntuales.}
+\label{fig:planta-ejes}
+\end{figure}
+
+\newpage
 % ============================================================
 \part*{PARTE 1: CORREA C 220$\times$65$\times$2}
 \addcontentsline{toc}{part}{Parte 1: Correa C 220$\times$65$\times$2}
